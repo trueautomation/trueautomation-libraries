@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>io.trueautomation</groupId>
+    <artifactId>trueautomation-client</artifactId>
+    <version>0.3.1</version>
+
+    <name>TrueAutomation.IO Driver</name>
+    <description>TrueAutomation.IO Client Library. Provides TrueAutomation.IO implementation of Selenium WebDriver and locator helper methods</description>
+    <url>https://trueautomation.io</url>
+
+    <developers>
+        <developer>
+            <name>TrueAutomation.IO</name>
+            <email>info@trueautomation.io</email>
+            <organization>TrueAutomation.IO</organization>
+            <organizationUrl>https://trueautomation.io</organizationUrl>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>TrueAutomation.IO Licence</name>
+            <url>https://trueautomation.io/license</url>
+            <distribution>may be downloaded from the Maven repository</distribution>
+        </license>
+    </licenses>
+
+    <properties>
+        <jdk.version>1.6</jdk.version>
+    </properties>
+
+    <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>3.11.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-chrome-driver</artifactId>
+            <version>3.11.0</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>trueautomation-client</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.5.1</version>
+                <configuration>
+                    <source>${jdk.version}</source>
+                    <target>${jdk.version}</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.6</version>
+            </plugin>
+        </plugins>
+    </build>
+</project>
