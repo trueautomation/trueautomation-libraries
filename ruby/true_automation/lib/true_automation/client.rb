@@ -1,6 +1,7 @@
 require 'open3'
 require 'json'
 require 'mkmf'
+require 'net/http'
 
 module TrueAutomation
   class Client
@@ -30,12 +31,8 @@ module TrueAutomation
     def stop
       if @pid
         puts "Stopping TrueAutomation.IO Client with pid #{@pid}"
-
-        if Gem.win_platform?
-          system("taskkill /pid #{@pid}")
-        else
-          Process.kill('TERM', @pid)
-        end
+        uri = URI("http://localhost:#{@port}/shutdown")
+        res = Net::HTTP.get(uri)
 
         @pid = nil
       end
