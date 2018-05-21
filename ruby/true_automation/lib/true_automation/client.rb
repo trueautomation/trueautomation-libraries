@@ -32,7 +32,7 @@ module TrueAutomation
       if @pid
         puts "Stopping TrueAutomation.IO Client with pid #{@pid}"
         uri = URI("http://localhost:#{@port}/shutdown")
-        res = Net::HTTP.get(uri)
+        Net::HTTP.get(uri)
 
         @pid = nil
       end
