@@ -106,6 +106,18 @@ Add TrueAutomation DSL to your test file
 include TrueAutomation::DSL
 ```
 
+### Remote webdriver support
+
+TrueAutomation.IO client can be used with default embedded ChromeDriver or with any remote WebDriver. You can choose which driver to use when configuring project with `trueautomation init`.
+
+To configure remote WebDriver pass WebDriver URL as TrueAutomationDriver constructor option:
+
+```ruby
+TrueAutomation::Driver::Capybara.new(app, browser: :remote, url: 'http://remote_driver_url:9515')
+```
+
+Don't forget to pass `browser: :remote` with `url:`.
+
 ## Usage
 
 Object is found by initial locator during the first run. We use advanced html tree and attributes analyzing algorithm which can find the object even if locator has been changed (id/classes are regenerated or HTML slightly changed).
