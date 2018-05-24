@@ -10,12 +10,12 @@ module TrueAutomation
 
         @ta_client = TrueAutomation::Client.new
 
-        ta_url = options && options[:ta_url] ? options[:ta_url] : "http://localhost:#{@port}/"
+        ta_url = options.try(:[], :ta_url) || "http://localhost:#{@port}/"
 
         capabilities = options.nil? ? nil : options[:desired_capabilities]
         capabilities ||= {}
         
-        if !options.nil? and options[:browser] == :remote
+        if options.present? and options[:browser] == :remote
           raise 'Remote driver URL is not specified' unless options[:url]
           capabilities[:taRemoteUrl] = options[:url]
         else
