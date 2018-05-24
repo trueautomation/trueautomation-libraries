@@ -10,9 +10,10 @@ module TrueAutomation
 
         @ta_client = TrueAutomation::Client.new
 
-        ta_url = options.try(:[], :ta_url) || "http://localhost:#{@port}/"
+        options ||= {}
+        ta_url = options[:ta_url] || "http://localhost:#{@port}/"
 
-        capabilities = options.nil? ? nil : options[:desired_capabilities]
+        capabilities = options[:desired_capabilities]
         capabilities ||= {}
         
         if options.present? and options[:browser] == :remote
