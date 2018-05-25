@@ -16,7 +16,7 @@ module TrueAutomation
         capabilities = options[:desired_capabilities]
         capabilities ||= {}
         
-        if options.present? and options[:browser] == :remote
+        if options and options[:browser] == :remote
           raise 'Remote driver URL is not specified' unless options[:url]
           capabilities[:taRemoteUrl] = options[:url]
         else
