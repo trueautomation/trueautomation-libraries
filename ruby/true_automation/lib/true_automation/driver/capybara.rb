@@ -1,6 +1,8 @@
 require_relative '../client'
 
 module TrueAutomation
+  class RecordNotFound < StandardError; end
+
   module Driver
     class Capybara < Capybara::Selenium::Driver
       def initialize(app, **options)
@@ -41,6 +43,32 @@ module TrueAutomation
           super
         end
         @browser
+      end
+
+      def find_css(selector)
+        res = super
+        if (!res || res.empty?)
+          check_selector(selector)
+        end
+        res
+      end
+
+      def find_xpath(selector)
+        res = super
+        if (!res || res.empty?)
+          check_selector(selector)
+        end
+        res
+      end
+
+      private
+
+      def check_selector(selector)
+        if ta_selector_match = selector.match(/__taonly__(.+)__taonly__/)
+          error_text = "Element '#{ta_selector_match[1]}' was not found in database. " +
+                       'Please provide a selector to find and initialize element.'
+          raise TrueAutomation::RecordNotFound.new(error_text)
+        end
       end
     end
   end
