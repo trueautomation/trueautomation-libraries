@@ -6,7 +6,7 @@
 
     <groupId>io.trueautomation</groupId>
     <artifactId>trueautomation-client</artifactId>
-    <version>0.3.2</version>
+    <version>0.3.3</version>
 
     <name>TrueAutomation.IO Driver</name>
     <description>TrueAutomation.IO Client Library. Provides TrueAutomation.IO implementation of Selenium WebDriver and locator helper methods</description>
