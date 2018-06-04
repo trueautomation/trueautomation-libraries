@@ -1,6 +1,10 @@
 package io.trueautomation.client.driver;
 
+import java.net.URL;
+import java.util.Map;
+import java.util.HashMap;
 import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.html5.*;
@@ -17,6 +21,7 @@ import org.openqa.selenium.remote.service.DriverCommandExecutor;
 
 public class TrueAutomationDriver extends RemoteWebDriver
         implements LocationContext, HasTouchScreen, WebStorage, NetworkConnection {
+    public static final String REMOTE_URL_CAPABILITY = "taRemoteUrl";
 
     private RemoteLocationContext locationContext;
     private RemoteWebStorage webStorage;
@@ -31,6 +36,15 @@ public class TrueAutomationDriver extends RemoteWebDriver
 
     public TrueAutomationDriver(Capabilities capabilities) {
         this(TrueAutomationService.createDefaultService(), capabilities);
+    }
+
+    public TrueAutomationDriver(final URL remoteUrl, Capabilities capabilities) {
+        this(TrueAutomationService.createDefaultService(),
+            capabilities.merge(new MutableCapabilities(
+              new HashMap<String, String>() {{
+                put(REMOTE_URL_CAPABILITY, remoteUrl.toString());
+              }}
+            )));
     }
 
     public TrueAutomationDriver(TrueAutomationService service, Capabilities capabilities) {
