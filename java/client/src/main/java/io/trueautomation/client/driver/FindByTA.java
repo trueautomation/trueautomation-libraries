@@ -4,7 +4,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.How;
 import org.openqa.selenium.support.PageFactoryFinder;
-import org.openqa.selenium.support.pagefactory.Annotations;
 
 import java.lang.annotation.*;
 import java.lang.reflect.Field;
@@ -41,12 +40,7 @@ public @interface FindByTA {
 
     public static class FindByBuilderTA extends FindBy.FindByBuilder {
         public By buildIt(Object annotation, Field field) {
-            FindByTA findByTA = (FindByTA) annotation;
-
-            String taSelector = findByTA.taName();
-            Annotation[] annotations =  field.getDeclaredAnnotations();
-
-            FindBy findBy = (FindBy)findByTA;
+            FindByTA findBy = (FindByTA) annotation;
             assertValidFindBy(findBy);
 
             By ans = buildByFromShortFindBy(findBy);
