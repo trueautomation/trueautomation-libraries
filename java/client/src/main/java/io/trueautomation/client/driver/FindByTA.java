@@ -70,35 +70,35 @@ public @interface FindByTA {
 
         protected By buildByFromShortFindBy(FindByTA findBy) {
             if (!"".equals(findBy.className())) {
-                return By.className(ta(findBy.className(), findBy.taName()));
+                return By.className(ta(findBy.taName(), findBy.className()));
             }
 
             if (!"".equals(findBy.css())) {
-                return By.cssSelector(ta(findBy.css(), findBy.taName()));
+                return By.cssSelector(ta(findBy.taName(), findBy.css()));
             }
 
             if (!"".equals(findBy.id())) {
-                return By.id(ta(findBy.id(), findBy.taName()));
+                return By.id(ta(findBy.taName(), findBy.id()));
             }
 
             if (!"".equals(findBy.linkText())) {
-                return By.linkText(ta(findBy.linkText(), findBy.taName()));
+                return By.linkText(ta(findBy.taName(), findBy.linkText()));
             }
 
             if (!"".equals(findBy.name())) {
-                return By.name(ta(findBy.name(), findBy.taName()));
+                return By.name(ta(findBy.taName(), findBy.name()));
             }
 
             if (!"".equals(findBy.partialLinkText())) {
-                return By.partialLinkText(ta(findBy.partialLinkText(), findBy.taName()));
+                return By.partialLinkText(ta(findBy.taName(), findBy.partialLinkText()));
             }
 
             if (!"".equals(findBy.tagName())) {
-                return By.tagName(ta(findBy.tagName(), findBy.taName()));
+                return By.tagName(ta(findBy.taName(), findBy.tagName()));
             }
 
             if (!"".equals(findBy.xpath())) {
-                return By.xpath(ta(findBy.xpath(), findBy.taName()));
+                return By.xpath(ta(findBy.taName(), findBy.xpath()));
             }
 
             // Fall through
@@ -106,7 +106,7 @@ public @interface FindByTA {
         }
 
         protected By buildByFromLongFindBy(FindByTA findBy) {
-            return findBy.how().buildBy(ta(findBy.using(), findBy.taName()));
+            return findBy.how().buildBy(ta(findBy.taName(), findBy.using()));
         }
 
         protected void assertValidFindBys(FindByTA[] findBys) {
