@@ -1,0 +1,21 @@
+{
+  "context-menu": {
+
+  },
+  "menu": [
+    {
+      "label": "Packages",
+      "submenu": [
+        {
+          "label": "trueautomation-atom",
+          "submenu": [
+            {
+              "label": "Toggle",
+              "command": "trueautomation-atom:toggle"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "manifest_version": 2,
+
+  "name": "TrueAutomation.IO",
+  "description": "Write your tests faster and make them more reliable with TrueAutomation.IO smart locators.",
+  "version": "0.3.2",
+  "browser_action": {
+    "default_icon": "icon.png"
+  },
+  "permissions": [
+    "activeTab",
+    "storage",
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  }
+}
