@@ -3,6 +3,7 @@
 import trueautomationAtomProvider from './trueautomation-atom-provider';
 import TrueautomationAtomView from './trueautomation-atom-view';
 import { CompositeDisposable, Range, Point, File } from 'atom';
+import { exec } from 'child_process';
 
 import fetch from 'isomorphic-fetch';
 
@@ -26,6 +27,19 @@ export default {
     this.modalPanel = atom.workspace.addModalPanel({
       item: this.trueautomationAtomView.getElement(),
       visible: false
+    });
+
+    projectPath = atom.project.rootDirectories[0].path;
+
+    exec(`~/.trueautomation/bin/trueautomation ide`, { cwd: projectPath }, (error) => {
+      if (error) {
+        console.log('[TRUEATUMATION IDE ERROR]: ' + error);
+        this.trueautomationAtomView.setText('Trueatomation is not installed. Please install to use TA plugin');
+        this.trueautomationAtomView.setDoneCallback(() => {
+          this.modalPanel.hide();
+        });
+        this.modalPanel.show();
+      }
     });
 
     // Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
