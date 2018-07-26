@@ -31,16 +31,19 @@ export default {
 
     projectPath = atom.project.rootDirectories[0].path;
 
-    exec(`~/.trueautomation/bin/trueautomation ide`, { cwd: projectPath }, (error) => {
-      if (error) {
-        console.log('[TRUEATUMATION IDE ERROR]: ' + error);
-        this.trueautomationAtomView.setText('Trueatomation is not installed. Please install to use TA plugin');
-        this.trueautomationAtomView.setDoneCallback(() => {
-          this.modalPanel.hide();
-        });
-        this.modalPanel.show();
-      }
-    });
+    const isWin = process.platform === "win32";
+    if (!isWin) {
+      exec(`~/.trueautomation/bin/trueautomation ide`, { cwd: projectPath }, (error) => {
+        if (error) {
+          console.log('[TRUEATUMATION IDE ERROR]: ' + error);
+          this.trueautomationAtomView.setText('Trueatomation is not installed. Please install to use TA plugin');
+          this.trueautomationAtomView.setDoneCallback(() => {
+            this.modalPanel.hide();
+          });
+          this.modalPanel.show();
+        }
+      });
+    }
 
     // Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     this.subscriptions = new CompositeDisposable();
