@@ -1,4 +1,5 @@
 'use babel';
+const io = require('socket.io-client');
 
 export default class TrueautomationAtomView {
 
@@ -11,6 +12,11 @@ export default class TrueautomationAtomView {
     this.message = document.createElement('div');
     this.message.textContent = 'NO TEXT';
     this.message.classList.add('ta-modal-message');
+
+    const socket = io('http://localhost:9898');
+    socket.on('taElementSelected', () => {
+      this.doneCallback();
+    });
     this.element.appendChild(this.message);
 
     this.doneButton = document.createElement('a');

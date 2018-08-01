@@ -22,17 +22,12 @@ export default {
     return this.p;
   },
 
-  activate(state) {
-    this.trueautomationAtomView = new TrueautomationAtomView(state.trueautomationAtomViewState);
-    this.modalPanel = atom.workspace.addModalPanel({
-      item: this.trueautomationAtomView.getElement(),
-      visible: false
-    });
-
+  runClientIde() {
     projectPath = atom.project.rootDirectories[0].path;
 
     const isWin = process.platform === "win32";
     if (!isWin) {
+      // TODO: Check if server already run
       exec(`~/.trueautomation/bin/trueautomation ide`, { cwd: projectPath }, (error) => {
         if (error) {
           console.log('[TRUEATUMATION IDE ERROR]: ' + error);
@@ -44,6 +39,16 @@ export default {
         }
       });
     }
+  },
+
+  activate(state) {
+    this.trueautomationAtomView = new TrueautomationAtomView(state.trueautomationAtomViewState);
+    this.modalPanel = atom.workspace.addModalPanel({
+      item: this.trueautomationAtomView.getElement(),
+      visible: false
+    });
+
+    this.runClientIde();
 
     // Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     this.subscriptions = new CompositeDisposable();

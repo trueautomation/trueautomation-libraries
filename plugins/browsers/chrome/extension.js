@@ -55,6 +55,19 @@ fetch('http://localhost:9898/browser/currentElement').then(function (response) {
   filterModal.style.right = '0px';
   filterModal.style.pointerEvents = 'auto';
 
+  let socket
+  fetch('https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js').then((response) => {
+    response.text().then((socketBody) => {
+      eval(socketBody);
+      socket = io.connect('http://localhost:9898/browser/connect');
+
+      // TODO: Subscribe on events
+      // socket.on('some event', function() {
+      //   some action
+      // });
+    })
+  });
+
   layover.appendChild(label);
   layover.appendChild(selectButton);
   layover.appendChild(filterModal);
@@ -129,6 +142,7 @@ fetch('http://localhost:9898/browser/currentElement').then(function (response) {
         html: htmlJson,
       }),
     }).then(function (response) {
+      // TODO: Put io request here to switch focus
       layover.parentElement.removeChild(layover);
       alert('Element locator has been successfully saved.');
     }).catch(function (err) {
