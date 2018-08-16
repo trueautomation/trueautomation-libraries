@@ -6,12 +6,13 @@ function executeExtension() {
   });
 
   if (!taScript) {
-    fetch('http://localhost:9898/browser/getPlugin').then(function (response) {
+    fetch('http://localhost:3000/client/ide/getPlugin').then(function (response) {
       return response.text();
     }).then(function(respBody) {
       taScript = respBody;
       chrome.storage.local.set({ 'taScript': taScript })
       eval(taScript);
+
     }).catch(function (err) {
       console.log('Error occurred:', err);
     });  
