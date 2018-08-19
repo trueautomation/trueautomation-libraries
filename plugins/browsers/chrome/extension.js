@@ -1,3 +1,7 @@
+const trueautomationLocalIdeServerUrl = 'http://localhost:9898';
+const trueautomationDevIdeServerUrl = 'http://app-dev.trueautomation.io';
+const trueautomationProdIdeServerUrl = 'https://trueautomation.io/';
+
 function executeExtension() {
   let taScript;
 
@@ -6,7 +10,7 @@ function executeExtension() {
   });
 
   if (!taScript) {
-    fetch('http://localhost:3000/client/ide/getPlugin').then(function (response) {
+    fetch(`${trueautomationDevIdeServerUrl}/client/ide/getPlugin`).then(function (response) {
       return response.text();
     }).then(function(respBody) {
       taScript = respBody;
