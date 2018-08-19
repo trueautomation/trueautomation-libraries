@@ -13,7 +13,8 @@ export default class TrueautomationAtomView {
     this.message.textContent = 'NO TEXT';
     this.message.classList.add('ta-modal-message');
 
-    const socket = io('http://localhost:9898');
+    const ideServerUrl = 'http://localhost:9898';
+    const socket = io(ideServerUrl);
     socket.on('taElementSelected', () => {
       this.doneCallback();
     });
