@@ -39,7 +39,7 @@ public class TrueAutomationDriver extends RemoteWebDriver
     }
 
     public TrueAutomationDriver(final URL remoteUrl, Capabilities capabilities) {
-        this(TrueAutomationService.createDefaultService(),
+        this(TrueAutomationService.createDefaultService(remoteUrl),
             capabilities.merge(new MutableCapabilities(
               new HashMap<String, String>() {{
                 put(REMOTE_URL_CAPABILITY, remoteUrl.toString());

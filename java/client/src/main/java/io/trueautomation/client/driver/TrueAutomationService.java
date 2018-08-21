@@ -50,6 +50,10 @@ public class TrueAutomationService extends DriverService {
                 argsBuilder.add(this.getLogFile().getAbsolutePath());
             }
 
+            if (this.getRemoteUrl() != null) {
+              argsBuilder.add("-remote");
+            }
+
             return argsBuilder.build();
         }
 
