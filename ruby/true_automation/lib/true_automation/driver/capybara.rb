@@ -32,7 +32,7 @@ module TrueAutomation
 
       def browser
         unless @browser
-          @ta_client.start(port: @port)
+          @ta_client.start(port: @port, remote: @options[:browser] == :remote)
 
           @ta_client.wait_until_start
 
