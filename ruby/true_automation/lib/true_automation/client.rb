@@ -53,13 +53,5 @@ module TrueAutomation
     def check_connection
       Socket.tcp('localhost', @port, connect_timeout: 2) { true } rescue false
     end
-
-    def driver
-
-    end
-
-    def loadConfig
-
-    end
   end
 end
