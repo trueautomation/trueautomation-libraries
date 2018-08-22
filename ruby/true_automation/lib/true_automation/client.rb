@@ -10,7 +10,7 @@ module TrueAutomation
     def start(options)
 
       @port = options[:port] || 9515
-      remote = options[:remote] ? '--remote' : ''
+      remote = options[:remote]
       @executable = ENV['TRUEAUTOMATION_EXEC'] || 'trueautomation'
 
       if find_executable(@executable).nil?
