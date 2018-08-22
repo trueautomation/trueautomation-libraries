@@ -7,13 +7,13 @@ module TrueAutomation
     class Capybara < Capybara::Selenium::Driver
       def initialize(app, **options)
         @port = options.delete(:port) || 9515
+        @driver = options.delete(:driver)
+        @driver_version = options.delete(:driver_version)
 
         super(app, options)
 
         @ta_client = TrueAutomation::Client.new
         @remote = ''
-        @driver = options.delete(:driver)
-        @driver_version = options.delete(:driver_version)
 
         options ||= {}
         ta_url = options[:ta_url] || "http://localhost:#{@port}/"
