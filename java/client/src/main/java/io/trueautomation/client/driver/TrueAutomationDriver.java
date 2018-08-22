@@ -28,18 +28,18 @@ public class TrueAutomationDriver extends RemoteWebDriver
     private TouchScreen touchScreen;
     private RemoteNetworkConnection networkConnection;
 
-    public TrueAutomationDriver() { this(TrueAutomationService.createDefaultService(), new ChromeOptions()); }
+    public TrueAutomationDriver() { this(TrueAutomationService.createDefaultService(null), new ChromeOptions()); }
 
     public TrueAutomationDriver(TrueAutomationService service) {
         this(service, new ChromeOptions());
     }
 
     public TrueAutomationDriver(Capabilities capabilities) {
-        this(TrueAutomationService.createDefaultService(), capabilities);
+        this(TrueAutomationService.createDefaultService((String) capabilities.getCapability(REMOTE_URL_CAPABILITY)), capabilities);
     }
 
     public TrueAutomationDriver(final URL remoteUrl, Capabilities capabilities) {
-        this(TrueAutomationService.createDefaultService(remoteUrl),
+        this(TrueAutomationService.createDefaultService(remoteUrl.toString()),
             capabilities.merge(new MutableCapabilities(
               new HashMap<String, String>() {{
                 put(REMOTE_URL_CAPABILITY, remoteUrl.toString());
