@@ -3,6 +3,7 @@
 import trueautomationAtomProvider from './trueautomation-atom-provider';
 import TrueautomationAtomView from './trueautomation-atom-view';
 import { CompositeDisposable, Range, Point, File } from 'atom';
+import { exec } from 'child_process';
 
 import fetch from 'isomorphic-fetch';
 
@@ -21,12 +22,54 @@ export default {
     return this.p;
   },
 
+  runClientIde() {
+    projectPath = atom.project.rootDirectories[0] && atom.project.rootDirectories[0].path;
+
+    const isWin = process.platform === "win32";
+    this.isRunning('trueautomation ide').then((isProcessRunning) => {
+      if (!isWin && !isProcessRunning && projectPath) {
+        exec(`~/.trueautomation/bin/trueautomation ide`, { cwd: projectPath }, (error) => {
+          if (error) {
+            this.trueautomationAtomView.setText('Trueatomation is not installed. Please install to use TA plugin');
+            this.trueautomationAtomView.setDoneCallback(() => {
+              this.modalPanel.hide();
+            });
+            this.modalPanel.show();
+          }
+        });
+      }
+    })
+  },
+
+  isRunning(processName) {
+    return new Promise((resolve, reject) => {
+      let platform = process.platform;
+      let cmd = '';
+      switch (platform) {
+          case 'win32' : cmd = `tasklist`; break;
+          case 'darwin' : cmd = `ps -ax | grep "${processName}"`; break;
+          case 'linux' : cmd = `ps -A`; break;
+          default: break;
+      }
+
+      exec(cmd, (err, stdout, stderr) => {
+        const processList = stdout.toLowerCase().
+                            replace(/grep "trueautomation ide"/, '').
+                            replace(/grep trueautomation ide/, '');
+
+        resolve(processList.indexOf(processName.toLowerCase()) > -1)
+      });
+    })
+  },
+
   activate(state) {
     this.trueautomationAtomView = new TrueautomationAtomView(state.trueautomationAtomViewState);
     this.modalPanel = atom.workspace.addModalPanel({
       item: this.trueautomationAtomView.getElement(),
       visible: false
     });
+
+    this.runClientIde();
 
     // Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     this.subscriptions = new CompositeDisposable();
