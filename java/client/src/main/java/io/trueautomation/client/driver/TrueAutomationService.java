@@ -14,11 +14,18 @@ public class TrueAutomationService extends DriverService {
         super(executable, port, args, environment);
     }
 
-    public static TrueAutomationService createDefaultService() {
-        return new Builder().usingAnyFreePort().build();
+    public static TrueAutomationService createDefaultService(String remote) {
+        return new Builder(remote).usingAnyFreePort().build();
     }
 
     public static class Builder extends DriverService.Builder<TrueAutomationService, TrueAutomationService.Builder> {
+
+        private String remote = null;
+
+        public Builder(String remote) {
+            super();
+            this.remote = remote;
+        }
 
         protected File findDefaultExecutable() {
             String homePath = System.getProperty("user.home");
@@ -48,6 +55,10 @@ public class TrueAutomationService extends DriverService {
             if (this.getLogFile() != null) {
                 argsBuilder.add("--log-file");
                 argsBuilder.add(this.getLogFile().getAbsolutePath());
+            }
+
+            if (this.remote != null) {
+                argsBuilder.add("--remote");
             }
 
             return argsBuilder.build();
