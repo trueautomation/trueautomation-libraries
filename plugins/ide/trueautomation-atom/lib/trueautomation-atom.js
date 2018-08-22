@@ -23,22 +23,43 @@ export default {
   },
 
   runClientIde() {
-    projectPath = atom.project.rootDirectories[0].path;
+    projectPath = atom.project.rootDirectories[0] && atom.project.rootDirectories[0].path;
 
     const isWin = process.platform === "win32";
-    if (!isWin) {
-      // TODO: Check if server already run
-      exec(`~/.trueautomation/bin/trueautomation ide`, { cwd: projectPath }, (error) => {
-        if (error) {
-          console.log('[TRUEATUMATION IDE ERROR]: ' + error);
-          this.trueautomationAtomView.setText('Trueatomation is not installed. Please install to use TA plugin');
-          this.trueautomationAtomView.setDoneCallback(() => {
-            this.modalPanel.hide();
-          });
-          this.modalPanel.show();
-        }
+    this.isRunning('trueautomation ide').then((isProcessRunning) => {
+      if (!isWin && !isProcessRunning && projectPath) {
+        exec(`~/.trueautomation/bin/trueautomation ide`, { cwd: projectPath }, (error) => {
+          if (error) {
+            this.trueautomationAtomView.setText('Trueatomation is not installed. Please install to use TA plugin');
+            this.trueautomationAtomView.setDoneCallback(() => {
+              this.modalPanel.hide();
+            });
+            this.modalPanel.show();
+          }
+        });
+      }
+    })
+  },
+
+  isRunning(processName) {
+    return new Promise((resolve, reject) => {
+      let platform = process.platform;
+      let cmd = '';
+      switch (platform) {
+          case 'win32' : cmd = `tasklist`; break;
+          case 'darwin' : cmd = `ps -ax | grep "${processName}"`; break;
+          case 'linux' : cmd = `ps -A`; break;
+          default: break;
+      }
+
+      exec(cmd, (err, stdout, stderr) => {
+        const processList = stdout.toLowerCase().
+                            replace(/grep "trueautomation ide"/, '').
+                            replace(/grep trueautomation ide/, '');
+
+        resolve(processList.indexOf(processName.toLowerCase()) > -1)
       });
-    }
+    })
   },
 
   activate(state) {
