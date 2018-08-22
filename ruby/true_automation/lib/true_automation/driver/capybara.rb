@@ -24,7 +24,7 @@ module TrueAutomation
         if options and options[:browser] == :remote
           raise 'Remote driver URL is not specified' unless options[:url]
           capabilities[:taRemoteUrl] = options[:url]
-          @remote = '--remote'
+          @remote = ' --remote'
         else
           capabilities[:browser] = options[:browser] || :chrome
         end

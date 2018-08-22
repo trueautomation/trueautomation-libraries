@@ -12,7 +12,9 @@ module TrueAutomation
 
       @port = options[:port] || 9515
       remote = options[:remote]
-      driverPath = driver(options[:driver], options[:driver_version])
+      current_driver = driver(options[:driver], options[:driver_version])
+      driver_path = " --driver #{current_driver}" if current_driver
+
       @executable = ENV['TRUEAUTOMATION_EXEC'] || 'trueautomation'
 
       if find_executable(@executable).nil?
@@ -25,7 +27,7 @@ module TrueAutomation
       Dir.mkdir('log') unless File.exist?('log')
       logfile = "log/trueautomation-#{Time.now.strftime('%Y%m%dT%H%M%S')}.log"
 
-      @pid = spawn("#{@executable} --log-file #{logfile} --port #{@port} --driver #{driverPath} #{remote}")
+      @pid = spawn("#{@executable} --log-file #{logfile} --port #{@port}#{driver_path}#{remote}")
       puts "Started TrueAutomation.IO client with pid #{@pid} listening to port #{@port}"
 
       @pid
@@ -58,7 +60,7 @@ module TrueAutomation
 
     def driver(name, version)
       return unless name || version
-      raise 'Capabilities :driver and :dirver_version should' unless name && version
+      raise 'Options :driver and :dirver_version should present together' unless name && version
 
       drivers = Find.find(File.join(Dir.home, '.trueautomation', name)).select {|f| f =~ /#{name}.+_#{version}/}
 
