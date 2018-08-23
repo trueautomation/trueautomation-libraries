@@ -24,9 +24,9 @@ public class TrueAutomationService extends DriverService {
         private String remote = null;
         private String driver = null;
         private String driverVersion = null;
-        public static final String REMOTE_URL_CAPABILITY = "taRemoteUrl";
-        public static final String DRIVER_CAPABILITY = "driver";
-        public static final String DRIVER_VERSION_CAPABILITY = "driver_version";
+        private static final String REMOTE_URL_CAPABILITY = "taRemoteUrl";
+        private static final String DRIVER_CAPABILITY = "driver";
+        private static final String DRIVER_VERSION_CAPABILITY = "driver_version";
 
         public Builder(Capabilities capabilities) {
             super();
