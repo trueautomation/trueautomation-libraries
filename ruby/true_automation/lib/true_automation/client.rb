@@ -2,7 +2,6 @@ require 'open3'
 require 'json'
 require 'mkmf'
 require 'net/http'
-require 'find'
 
 module TrueAutomation
   class Client
