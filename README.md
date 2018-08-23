@@ -3,7 +3,7 @@
   
   From local repository: 
       
-    gem 'true_automation', path: '<local_path>'
+    gem 'true_automation', path: '<local_path_to_ruby_directory>'
     
   From branch:
   
