@@ -2,6 +2,7 @@ package io.trueautomation.client.driver;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.remote.service.DriverService;
 
@@ -14,8 +15,8 @@ public class TrueAutomationService extends DriverService {
         super(executable, port, args, environment);
     }
 
-    public static TrueAutomationService createDefaultService(String remote, String driver, String driverVersion) {
-        return new Builder(remote, driver, driverVersion).usingAnyFreePort().build();
+    public static TrueAutomationService createDefaultService(Capabilities capabilities) {
+        return new Builder(capabilities).usingAnyFreePort().build();
     }
 
     public static class Builder extends DriverService.Builder<TrueAutomationService, TrueAutomationService.Builder> {
@@ -23,12 +24,15 @@ public class TrueAutomationService extends DriverService {
         private String remote = null;
         private String driver = null;
         private String driverVersion = null;
+        public static final String REMOTE_URL_CAPABILITY = "taRemoteUrl";
+        public static final String DRIVER_CAPABILITY = "driver";
+        public static final String DRIVER_VERSION_CAPABILITY = "driver_version";
 
-        public Builder(String remote, String driver, String driverVersion) {
+        public Builder(Capabilities capabilities) {
             super();
-            this.remote = remote;
-            this.driver = driver;
-            this.driverVersion = driverVersion;
+            this.remote = (String) capabilities.getCapability(REMOTE_URL_CAPABILITY);
+            this.driver = (String) capabilities.getCapability(DRIVER_CAPABILITY);
+            this.driverVersion = (String) capabilities.getCapability(DRIVER_VERSION_CAPABILITY);
         }
 
         protected File findDefaultExecutable() {
@@ -67,9 +71,9 @@ public class TrueAutomationService extends DriverService {
 
             if (this.driver != null && this.driverVersion != null) {
                 argsBuilder.add("--driver");
-                argsBuilder.add(driver);
+                argsBuilder.add(this.driver);
                 argsBuilder.add("--driver-version");
-                argsBuilder.add(driverVersion);
+                argsBuilder.add(this.driverVersion);
             }
 
             return argsBuilder.build();
