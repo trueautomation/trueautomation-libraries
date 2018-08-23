@@ -12,8 +12,10 @@ module TrueAutomation
 
       @port = options[:port] || 9515
       remote = options[:remote]
-      current_driver = driver(options[:driver], options[:driver_version])
-      driver_path = " --driver #{current_driver}" if current_driver
+
+      if options[:driver] && options[:driver_version]
+        driver_path = " --driver #{options[:driver]} --driver-version #{options[:driver_version]}"
+      end
 
       @executable = ENV['TRUEAUTOMATION_EXEC'] || 'trueautomation'
 
@@ -56,18 +58,6 @@ module TrueAutomation
 
     def check_connection
       Socket.tcp('localhost', @port, connect_timeout: 2) { true } rescue false
-    end
-
-    def driver(name, version)
-      return unless name || version
-      raise 'Options :driver and :dirver_version should present together' unless name && version
-
-      drivers = Find.find(File.join(Dir.home, '.trueautomation', name)).select {|f| f =~ /#{name}.+_#{version}/}
-
-      raise "Ambiguous driver version #{version} for #{name}. Please check the driver version." if drivers.length > 1
-      raise "Driver #{name} with version #{version} not found. Please run command to download this driver version `trueautomation driver download #{name} #{version}`" if drivers.empty?
-
-      drivers.first
     end
   end
 end

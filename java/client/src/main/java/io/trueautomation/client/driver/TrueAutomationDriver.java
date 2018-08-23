@@ -22,24 +22,26 @@ import org.openqa.selenium.remote.service.DriverCommandExecutor;
 public class TrueAutomationDriver extends RemoteWebDriver
         implements LocationContext, HasTouchScreen, WebStorage, NetworkConnection {
     public static final String REMOTE_URL_CAPABILITY = "taRemoteUrl";
+    public static final String DRIVER_CAPABILITY = "driver";
+    public static final String DRIVER_VERSION_CAPABILITY = "driver_version";
 
     private RemoteLocationContext locationContext;
     private RemoteWebStorage webStorage;
     private TouchScreen touchScreen;
     private RemoteNetworkConnection networkConnection;
 
-    public TrueAutomationDriver() { this(TrueAutomationService.createDefaultService(null), new ChromeOptions()); }
+    public TrueAutomationDriver() { this(TrueAutomationService.createDefaultService(null, null, null), new ChromeOptions()); }
 
     public TrueAutomationDriver(TrueAutomationService service) {
         this(service, new ChromeOptions());
     }
 
     public TrueAutomationDriver(Capabilities capabilities) {
-        this(TrueAutomationService.createDefaultService((String) capabilities.getCapability(REMOTE_URL_CAPABILITY)), capabilities);
+        this(TrueAutomationService.createDefaultService((String) capabilities.getCapability(REMOTE_URL_CAPABILITY), (String) capabilities.getCapability(DRIVER_CAPABILITY), (String) capabilities.getCapability(DRIVER_VERSION_CAPABILITY)), capabilities);
     }
 
     public TrueAutomationDriver(final URL remoteUrl, Capabilities capabilities) {
-        this(TrueAutomationService.createDefaultService(remoteUrl.toString()),
+        this(TrueAutomationService.createDefaultService(remoteUrl.toString(), (String) capabilities.getCapability(DRIVER_CAPABILITY), (String) capabilities.getCapability(DRIVER_VERSION_CAPABILITY)),
             capabilities.merge(new MutableCapabilities(
               new HashMap<String, String>() {{
                 put(REMOTE_URL_CAPABILITY, remoteUrl.toString());
