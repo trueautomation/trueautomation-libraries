@@ -7,6 +7,8 @@ module TrueAutomation
     class Capybara < Capybara::Selenium::Driver
       def initialize(app, **options)
         @port = options.delete(:port) || 9515
+        @driver = options.delete(:driver)
+        @driver_version = options.delete(:driver_version)
 
         super(app, options)
 
@@ -18,11 +20,11 @@ module TrueAutomation
 
         capabilities = options[:desired_capabilities]
         capabilities ||= {}
-        
+
         if options and options[:browser] == :remote
           raise 'Remote driver URL is not specified' unless options[:url]
           capabilities[:taRemoteUrl] = options[:url]
-          @remote = '--remote'
+          @remote = ' --remote'
         else
           capabilities[:browser] = options[:browser] || :chrome
         end
@@ -34,7 +36,7 @@ module TrueAutomation
 
       def browser
         unless @browser
-          @ta_client.start(port: @port, remote: @remote)
+          @ta_client.start(port: @port, remote: @remote, driver: @driver, driver_version: @driver_version)
 
           @ta_client.wait_until_start
 
@@ -49,17 +51,13 @@ module TrueAutomation
 
       def find_css(selector)
         res = super
-        if (!res || res.empty?)
-          check_selector(selector)
-        end
+        check_selector(selector) if !res || res.empty?
         res
       end
 
       def find_xpath(selector)
         res = super
-        if (!res || res.empty?)
-          check_selector(selector)
-        end
+        check_selector(selector) if !res || res.empty?
         res
       end
 
@@ -69,7 +67,7 @@ module TrueAutomation
         if ta_selector_match = selector.match(/__taonly__(.+)__taonly__/)
           error_text = "Element '#{ta_selector_match[1]}' was not found in database. " +
                        'Please provide a selector to find and initialize element.'
-          raise TrueAutomation::RecordNotFound.new(error_text)
+          raise TrueAutomation::RecordNotFound, error_text
         end
       end
     end

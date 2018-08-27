@@ -11,6 +11,11 @@ module TrueAutomation
 
       @port = options[:port] || 9515
       remote = options[:remote]
+
+      if options[:driver] && options[:driver_version]
+        driver_path = " --driver #{options[:driver]} --driver-version #{options[:driver_version]}"
+      end
+
       @executable = ENV['TRUEAUTOMATION_EXEC'] || 'trueautomation'
 
       if find_executable(@executable).nil?
@@ -23,7 +28,7 @@ module TrueAutomation
       Dir.mkdir('log') unless File.exist?('log')
       logfile = "log/trueautomation-#{Time.now.strftime('%Y%m%dT%H%M%S')}.log"
 
-      @pid = spawn("#{@executable} --log-file #{logfile} --port #{@port} #{remote}")
+      @pid = spawn("#{@executable} --log-file #{logfile} --port #{@port}#{driver_path}#{remote}")
       puts "Started TrueAutomation.IO client with pid #{@pid} listening to port #{@port}"
 
       @pid
