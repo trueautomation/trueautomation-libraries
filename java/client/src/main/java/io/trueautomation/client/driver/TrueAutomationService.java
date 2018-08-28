@@ -30,9 +30,11 @@ public class TrueAutomationService extends DriverService {
 
         public Builder(Capabilities capabilities) {
             super();
-            this.remote = (String) capabilities.getCapability(REMOTE_URL_CAPABILITY);
-            this.driver = (String) capabilities.getCapability(DRIVER_CAPABILITY);
-            this.driverVersion = (String) capabilities.getCapability(DRIVER_VERSION_CAPABILITY);
+            if (capabilities != null) {
+                this.remote = (String) capabilities.getCapability(REMOTE_URL_CAPABILITY);
+                this.driver = (String) capabilities.getCapability(DRIVER_CAPABILITY);
+                this.driverVersion = (String) capabilities.getCapability(DRIVER_VERSION_CAPABILITY);
+            }
         }
 
         protected File findDefaultExecutable() {
