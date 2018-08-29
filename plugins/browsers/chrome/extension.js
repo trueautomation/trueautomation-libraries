@@ -8,7 +8,7 @@ function executeExtension() {
     taScript = result['taScript'];
 
     if (!taScript) {
-      fetch(`${trueautomationLocalIdeServerUrl}/client/ide/getPlugin`).then(function (response) {
+      fetch(`${trueautomationDevIdeServerUrl}/client/ide/getPlugin`).then(function (response) {
         return response.text();
       }).then(function(respBody) {
         taScript = respBody;
