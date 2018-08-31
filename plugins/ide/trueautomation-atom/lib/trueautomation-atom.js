@@ -182,8 +182,30 @@ export default {
 
       const elements = await elementsJson.json();
       const foundClass = elements.elements.length > 0 ? 'ta-found' : 'ta-not-found';
-      const nameMarker = editor.markBufferRange(rangeToMarkName, { invalidate: 'touch' });
-      const taMarker = editor.markBufferRange(rangeToMarkTA, { invalidate: 'touch' });
+      let nameMarker = [...markers].find((markerElement) => {
+        return markerElement.oldTailScreenPosition.row === rangeToMarkName.start.row &&
+               markerElement.oldTailScreenPosition.column === rangeToMarkName.start.column
+      })
+
+      let taMarker = [...markers].find((markerElement) => {
+        return markerElement.oldTailScreenPosition.row === rangeToMarkTA.start.row &&
+               markerElement.oldTailScreenPosition.column === rangeToMarkTA.start.column &&
+               markerElement.oldHeadScreenPosition.row === rangeToMarkTA.end.row &&
+               markerElement.oldHeadScreenPosition.column === rangeToMarkTA.end.column
+      })
+
+      if (nameMarker) {
+        nameMarker.destroy();
+        markers.splice(markers.indexOf(nameMarker), 1)
+      }
+      if (taMarker) {
+        taMarker.destroy();
+        markers.splice(markers.indexOf(taMarker), 1)
+      }
+
+      nameMarker = editor.markBufferRange(rangeToMarkName, { invalidate: 'touch' });
+      taMarker = editor.markBufferRange(rangeToMarkTA, { invalidate: 'touch' });
+
       editor.decorateMarker(nameMarker, { type: 'text', class: `ta-element-name ${foundClass}` });
       editor.decorateMarker(taMarker, { type: 'overlay', item: taButtonElement });
       editor.decorateMarker(taMarker, { type: 'text', class: `ta-element` });
