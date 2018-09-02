@@ -155,49 +155,30 @@ export default {
     return taButtonElement;
   },
 
-  cleanUpMarkName(rangeToMarkName) {
+  cleanUpMarker(markerRange) {
     const markers = this.markers;
-    const nameMarker = [...markers].find((markerElement) => {
-      return markerElement.oldTailScreenPosition.isEqual(rangeToMarkName.start);
+    const markerElement = [...markers].find((markerElement) => {
+      return markerElement.oldTailScreenPosition.isEqual(markerRange.start);
     });
 
-    if (nameMarker) {
-      nameMarker.destroy();
-      markers.splice(markers.indexOf(nameMarker), 1);
+    if (markerElement) {
+      markerElement.destroy();
+      markers.splice(markers.indexOf(markerElement), 1);
     }
-
-    return nameMarker;
   },
 
-  cleanUpMarkTA(rangeToMarkTA) {
+  createMarker({ row, start, end, taButtonElement, editor, markerClass }) {
     const markers = this.markers;
 
-    const taMarker = [...markers].find((markerElement) => {
-      return markerElement.oldTailScreenPosition.isEqual(rangeToMarkTA.start) &&
-        markerElement.oldHeadScreenPosition.isEqual(rangeToMarkTA.end);
-    });
-
-    if (taMarker) {
-      taMarker.destroy();
-      markers.splice(markers.indexOf(taMarker), 1);
-    }
-
-    return taMarker;
-  },
-
-  createTaMarker({ taName, start, taButtonElement, editor }) {
-    const markers = this.markers;
-
-    const rangeToMarkTA = new Range(
-      new Point(start.row, start.column + 2),
-      new Point(start.row, start.column + 3),
+    const markRange = new Range(
+      new Point(row, start),
+      new Point(row, end),
     );
 
-    let taMarker = this.cleanUpMarkTA(rangeToMarkTA);
-    taMarker = editor.markBufferRange(rangeToMarkTA, { invalidate: 'touch' });
+    this.cleanUpMarker(markRange);
+    const markerElement = editor.markBufferRange(markRange, { invalidate: 'touch' });
 
-    editor.decorateMarker(taMarker, { type: 'overlay', item: taButtonElement });
-    editor.decorateMarker(taMarker, { type: 'text', class: `ta-element` });
+    editor.decorateMarker(taMarker, { type: 'text', class: markerClass });
 
     taMarker.onDidChange((event) => {
       if (event.wasValid && !event.isValid
@@ -206,35 +187,39 @@ export default {
       }
     });
 
+    return taMarker;
+  },
+
+  createTaMarker({ taName, start, taButtonElement, editor }) {
+    const markers = this.markers;
+
+    const row = start.row;
+    const startColumn = start.column + 2;
+    const endColumn = start.column + 3;
+    const markerClass = 'ta-element';
+
+    const taMarker = this.createMarker({ row, startColumn, endColumn, taButtonElement, editor, markerClass });
+    editor.decorateMarker(taMarker, { type: 'overlay', item: taButtonElement });
+
     markers.push(taMarker);
   },
 
-  createNameMarker({ taName, start, taButtonElement, editor, nameIndex, foundClass }) {
+  createNameMarker({ taName, start, taButtonElement, editor, foundClass }) {
     const markers = this.markers;
 
-    const rangeToMarkName = new Range(
-      new Point(start.row, start.column + nameIndex),
-      new Point(start.row, start.column + nameIndex + taName.length),
-    );
+    const row = start.row;
+    const startColumn = start.column + nameIndex;
+    const endColumn = start.column + nameIndex + taName.length;
+    const markerClass = `ta-element-name ${foundClass}`;
 
-    let nameMarker = this.cleanUpMarkName(rangeToMarkName);
+    const nameMarker = this.createMarker({ row, startColumn, endColumn, taButtonElement, editor, markerClass });
+    nameMarker
 
-    nameMarker = editor.markBufferRange(rangeToMarkName, { invalidate: 'touch' });
-
-    editor.decorateMarker(nameMarker, { type: 'text', class: `ta-element-name ${foundClass}` });
-
-    nameMarker.onDidChange((event) => {
-      if (event.wasValid && !event.isValid
-        && taButtonElement && taButtonElement.parentElement) {
-        taButtonElement.parentElement.removeChild(taButtonElement);
-      }
-    });
     markers.push(nameMarker);
   },
 
   createTaMarkers(result, foundClass, editor) {
     const taName = result.match[1];
-    console.log(result.match);
 
     const nameIndex = result.match[0].indexOf(taName);
     const { start, end } = result.range;
@@ -245,12 +230,11 @@ export default {
       start,
       taButtonElement,
       editor,
+      foundClass,
     };
 
-    const nameOptions = { ...taOptions, nameIndex, foundClass };
-
     this.createTaMarker(taOptions);
-    this.createNameMarker(nameOptions);
+    this.createNameMarker(taOptions);
   },
 
   scanForTa(editor) {
