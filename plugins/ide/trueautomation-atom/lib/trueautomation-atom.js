@@ -236,7 +236,7 @@ export default {
   },
 
   scanForTa(editor) {
-    editor.scan(/([^a-zA-Z|^_|^-]|^)ta\s*\(\s*[\'\"]((\w|:)+)[\'\"]\s*\)/g, {}, async (result) => {
+    editor.scan(/[^a-zA-Z|^_|^-]|^ta\s*\(\s*[\'\"]((\w|:)+)[\'\"]\s*\)/g, {}, async (result) => {
       const taName = result.match[1];
       const elementsJson = await fetch('http://localhost:9898/ide/findElementsByNames', {
         method: 'POST',
