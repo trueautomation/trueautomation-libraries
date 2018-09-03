@@ -216,9 +216,9 @@ export default {
   },
 
   createTaMarkers(result, foundClass, editor) {
-    const taName = result.match[1];
+    const taName = result.match[2];
 
-    const nameIndex = result.match[0].indexOf(taName);
+    const nameIndex = result.match[1].indexOf(taName);
     const { start, end } = result.range;
     const taButtonElement = this.taButton(taName, editor);
 
@@ -236,8 +236,8 @@ export default {
   },
 
   scanForTa(editor) {
-    editor.scan(/[^a-zA-Z|^_|^-]ta\s*\(\s*[\'\"]((\w|:)+)[\'\"]\s*\)/g, {}, async (result) => {
-      const taName = result.match[1];
+    editor.scan(/[^a-zA-Z|^_|^-](ta)\s*\(\s*[\'\"]((\w|:)+)[\'\"]\s*\)/g, {}, async (result) => {
+      const taName = result.match[2];
       const elementsJson = await fetch('http://localhost:9898/ide/findElementsByNames', {
         method: 'POST',
         headers: {
