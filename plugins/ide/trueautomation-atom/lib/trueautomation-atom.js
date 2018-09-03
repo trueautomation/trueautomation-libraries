@@ -167,10 +167,10 @@ export default {
     }
   },
 
-  createMarker({ row, start, end, taButtonElement, editor, markerClass }) {
+  createMarker({ row, startColumn, endColumn, taButtonElement, editor, markerClass }) {
     const markRange = new Range(
-      new Point(row, start),
-      new Point(row, end),
+      new Point(row, startColumn),
+      new Point(row, endColumn),
     );
 
     this.cleanUpMarker(markRange);
