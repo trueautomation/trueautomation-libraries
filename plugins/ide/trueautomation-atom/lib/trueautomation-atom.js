@@ -107,6 +107,8 @@ export default {
       const editorElement = atom.views.getView(editor);
 
       editor.onDidStopChanging(() => {
+        const lastEditedPoint = editor.getCursorBufferPosition();
+        this.cleanUpMarkersForRow(lastEditedPoint.row);
         this.scanForTa(editor);
       });
 
@@ -153,6 +155,18 @@ export default {
     });
 
     return taButtonElement;
+  },
+
+  cleanUpMarkersForRow(editedRow) {
+    const markers = this.markers;
+    const markerElements = [...markers].filter((markerElement) => {
+      return markerElement.oldTailScreenPosition.row === editedRow;
+    });
+
+    markerElements.forEach((markerElement) => {
+      markerElement.destroy();
+      markers.splice(markers.indexOf(markerElement), 1);
+    })
   },
 
   cleanUpMarker(markerRange) {
