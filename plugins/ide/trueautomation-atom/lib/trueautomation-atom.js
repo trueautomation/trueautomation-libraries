@@ -114,27 +114,130 @@ export default {
     })
   },
 
-  scanForTa(editor) {
+  taButton(taName, editor) {
+    const markers = this.markers;
+    const taButtonElement = document.createElement('div');
+    taButtonElement.className = 'ta-element-button';
+    taButtonElement.innerHTML = 'TA';
+    taButtonElement.addEventListener('mouseover', (event) => {
+      taButtonElement.classList.add('ta-hover');
+    });
+
+    taButtonElement.addEventListener('mouseout', (event) => {
+      taButtonElement.classList.remove('ta-hover');
+    });
+
+    taButtonElement.addEventListener('click', async (event) => {
+      console.log('Element clicked:', taName);
+
+      await fetch('http://localhost:9898/ide/selectElement', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ name: taName }),
+      });
+
+      this.trueautomationAtomView.setText(`Choose element for '${taName}' locator in your Chrome browser`);
+      this.trueautomationAtomView.setDoneCallback(() => {
+        this.modalPanel.hide();
+        if (markers && markers.length > 0) {
+          for (let i = 0; i < markers.length; i++) {
+            markers[i].destroy();
+          }
+        }
+        this.scanForTa(editor);
+      });
+      this.modalPanel.show();
+    });
+
+    return taButtonElement;
+  },
+
+  cleanUpMarker(markerRange) {
+    const markers = this.markers;
+    const markerElement = [...markers].find((markerElement) => {
+      return markerElement.oldTailScreenPosition.isEqual(markerRange.start);
+    });
+
+    if (markerElement) {
+      markerElement.destroy();
+      markers.splice(markers.indexOf(markerElement), 1);
+    }
+  },
+
+  createMarker({ row, startColumn, endColumn, taButtonElement, editor, markerClass }) {
+    const markRange = new Range(
+      new Point(row, startColumn),
+      new Point(row, endColumn),
+    );
+
+    this.cleanUpMarker(markRange);
+    const markerElement = editor.markBufferRange(markRange, { invalidate: 'touch' });
+
+    editor.decorateMarker(markerElement, { type: 'text', class: markerClass });
+
+    markerElement.onDidChange((event) => {
+      if (event.wasValid && !event.isValid
+        && taButtonElement && taButtonElement.parentElement) {
+        taButtonElement.parentElement.removeChild(taButtonElement);
+      }
+    });
+
+    return markerElement;
+  },
+
+  createTaMarker({ taName, start, taButtonElement, editor }) {
     const markers = this.markers;
 
+    const row = start.row;
+    const startColumn = start.column + 2;
+    const endColumn = start.column + 3;
+    const markerClass = 'ta-element';
+
+    const taMarker = this.createMarker({ row, startColumn, endColumn, taButtonElement, editor, markerClass });
+    editor.decorateMarker(taMarker, { type: 'overlay', item: taButtonElement });
+
+    markers.push(taMarker);
+  },
+
+  createNameMarker({ taName, start, taButtonElement, editor, foundClass, nameIndex }) {
+    const markers = this.markers;
+
+    const row = start.row;
+    const startColumn = start.column + nameIndex;
+    const endColumn = start.column + nameIndex + taName.length;
+    const markerClass = `ta-element-name ${foundClass}`;
+
+    const nameMarker = this.createMarker({ row, startColumn, endColumn, taButtonElement, editor, markerClass });
+
+    markers.push(nameMarker);
+  },
+
+  createTaMarkers(result, foundClass, editor) {
+    const taName = result.match[1];
+
+    const nameIndex = result.match[0].indexOf(taName);
+    const { start, end } = result.range;
+    const taButtonElement = this.taButton(taName, editor);
+
+    const taOptions = {
+      taName,
+      start,
+      taButtonElement,
+      editor,
+      foundClass,
+      nameIndex,
+    };
+
+    this.createTaMarker(taOptions);
+    this.createNameMarker(taOptions);
+  },
+
+  scanForTa(editor) {
     editor.scan(/ta\s*\(\s*[\'\"]((\w|:)+)[\'\"]\s*\)/g, {}, async (result) => {
       const taName = result.match[1];
-
-      console.log(result.match);
-
-      const nameIndex = result.match[0].indexOf(taName);
-      const { start, end } = result.range;
-
-      const rangeToMarkName = new Range(
-        new Point(start.row, start.column + nameIndex),
-        new Point(start.row, start.column + nameIndex + taName.length),
-      );
-
-      const rangeToMarkTA = new Range(
-        new Point(start.row, start.column + 2),
-        new Point(start.row, start.column + 3),
-      );
-
       const elementsJson = await fetch('http://localhost:9898/ide/findElementsByNames', {
         method: 'POST',
         headers: {
@@ -144,88 +247,10 @@ export default {
         body: JSON.stringify({ names: [taName] }),
       });
 
-      const taButtonElement = document.createElement('div');
-      taButtonElement.className = 'ta-element-button';
-      taButtonElement.innerHTML = 'TA';
-      taButtonElement.addEventListener('mouseover', (event) => {
-        taButtonElement.classList.add('ta-hover');
-      });
-
-      taButtonElement.addEventListener('mouseout', (event) => {
-        taButtonElement.classList.remove('ta-hover');
-      });
-
-      taButtonElement.addEventListener('click', async (event) => {
-        console.log('Element clicked:', taName);
-
-        await fetch('http://localhost:9898/ide/selectElement', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: JSON.stringify({ name: taName }),
-        });
-
-        this.trueautomationAtomView.setText(`Choose element for '${taName}' locator in your Chrome browser`);
-        this.trueautomationAtomView.setDoneCallback(() => {
-          this.modalPanel.hide();
-          if (markers && markers.length > 0) {
-            for (let i = 0; i < markers.length; i++) {
-              markers[i].destroy();
-            }
-          }
-          this.scanForTa(editor);
-        });
-        this.modalPanel.show();
-      });
-
       const elements = await elementsJson.json();
       const foundClass = elements.elements.length > 0 ? 'ta-found' : 'ta-not-found';
-      let nameMarker = [...markers].find((markerElement) => {
-        return markerElement.oldTailScreenPosition.row === rangeToMarkName.start.row &&
-               markerElement.oldTailScreenPosition.column === rangeToMarkName.start.column
-      })
 
-      let taMarker = [...markers].find((markerElement) => {
-        return markerElement.oldTailScreenPosition.row === rangeToMarkTA.start.row &&
-               markerElement.oldTailScreenPosition.column === rangeToMarkTA.start.column &&
-               markerElement.oldHeadScreenPosition.row === rangeToMarkTA.end.row &&
-               markerElement.oldHeadScreenPosition.column === rangeToMarkTA.end.column
-      })
-
-      if (nameMarker) {
-        nameMarker.destroy();
-        markers.splice(markers.indexOf(nameMarker), 1)
-      }
-      if (taMarker) {
-        taMarker.destroy();
-        markers.splice(markers.indexOf(taMarker), 1)
-      }
-
-      nameMarker = editor.markBufferRange(rangeToMarkName, { invalidate: 'touch' });
-      taMarker = editor.markBufferRange(rangeToMarkTA, { invalidate: 'touch' });
-
-      editor.decorateMarker(nameMarker, { type: 'text', class: `ta-element-name ${foundClass}` });
-      editor.decorateMarker(taMarker, { type: 'overlay', item: taButtonElement });
-      editor.decorateMarker(taMarker, { type: 'text', class: `ta-element` });
-
-      nameMarker.onDidChange((event) => {
-        if (event.wasValid && !event.isValid
-          && taButtonElement && taButtonElement.parentElement) {
-          taButtonElement.parentElement.removeChild(taButtonElement);
-        }
-      });
-
-      taMarker.onDidChange((event) => {
-        if (event.wasValid && !event.isValid
-          && taButtonElement && taButtonElement.parentElement) {
-          taButtonElement.parentElement.removeChild(taButtonElement);
-        }
-      });
-
-      markers.push(taMarker);
-      markers.push(nameMarker);
+      this.createTaMarkers(result, foundClass, editor);
     });
   }
 };
