@@ -227,11 +227,9 @@ export default {
     const firstNonSpace = text.search(/\S/);
 
     if (firstNonSpace === -1) return null;
-    let spaces = '';
 
-    for (let i = 0; i < 3 - firstNonSpace; i++) {
-      spaces += ' ';
-    }
+    let spaces = '';
+    for (let i = 0; i < 3 - firstNonSpace; i++) spaces += ' ';
 
     editor.setTextInBufferRange(textRange, spaces + text);
     return true;
