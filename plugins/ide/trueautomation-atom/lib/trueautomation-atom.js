@@ -229,7 +229,7 @@ export default {
 
     this.updateEditorText({ row, startColumn, endColumn, editor });
     const taMarker = this.createMarker({ row, startColumn, endColumn, taButtonElement, editor, markerClass });
-    editor.decorateMarker(taMarker, { type: 'overlay', item: taButtonElement });
+    editor.decorateMarker(taMarker, { type: 'overlay', item: taButtonElement, class: 'ta-element' });
     markers.push(taMarker);
   },
 
