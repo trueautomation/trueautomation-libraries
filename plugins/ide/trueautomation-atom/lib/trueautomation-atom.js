@@ -223,8 +223,8 @@ export default {
       new Point(row, endColumn),
     );
 
-    const text =  editor.getTextInBufferRange(textRange);
-    const firstNonSpace =  text.search(/\S/);
+    const text = editor.getTextInBufferRange(textRange);
+    const firstNonSpace = text.search(/\S/);
 
     if (firstNonSpace === -1) return null;
     let spaces = '';
