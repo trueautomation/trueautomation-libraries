@@ -188,9 +188,14 @@ export default {
     );
 
     this.cleanUpMarker(markRange);
-    const markerElement = editor.markBufferRange(markRange, { invalidate: 'touch' });
+    const markerElement = editor.markBufferRange(markRange, { invalidate: markerClass !== 'ta-element' ? 'touch' : 'overlap' });
 
-    editor.decorateMarker(markerElement, { type: 'text', class: markerClass });
+    if (markerClass !== 'ta-element') {
+      editor.decorateMarker(markerElement, { type: 'text', class: markerClass });
+    }
+    else {
+      editor.decorateMarker(markerElement, { type: 'block', item: taButtonElement });
+    }
 
     markerElement.onDidChange((event) => {
       if (event.wasValid && !event.isValid
@@ -206,13 +211,11 @@ export default {
     const markers = this.markers;
 
     const row = start.row;
-    const startColumn = start.column + 2;
-    const endColumn = start.column + 3;
+    const startColumn = 0;
+    const endColumn = 1;
     const markerClass = 'ta-element';
 
     const taMarker = this.createMarker({ row, startColumn, endColumn, taButtonElement, editor, markerClass });
-    editor.decorateMarker(taMarker, { type: 'overlay', item: taButtonElement });
-
     markers.push(taMarker);
   },
 
@@ -232,7 +235,7 @@ export default {
   createTaMarkers(result, foundClass, editor) {
     const taName = result.match[1];
 
-    const nameIndex = result.match[0].indexOf(taName);
+    const nameIndex = result.match[0].search(/\"|\'/) + 1;
     const { start, end } = result.range;
     const taButtonElement = this.taButton(taName, editor);
 
