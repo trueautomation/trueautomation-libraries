@@ -188,14 +188,9 @@ export default {
     );
 
     this.cleanUpMarker(markRange);
-    const markerElement = editor.markBufferRange(markRange, { invalidate: markerClass !== 'ta-element' ? 'touch' : 'overlap' });
+    const markerElement = editor.markBufferRange(markRange, { invalidate: 'touch' });
 
-    if (markerClass !== 'ta-element') {
-      editor.decorateMarker(markerElement, { type: 'text', class: markerClass });
-    }
-    else {
-      editor.decorateMarker(markerElement, { type: 'block', item: taButtonElement });
-    }
+    editor.decorateMarker(markerElement, { type: 'text', class: markerClass });
 
     markerElement.onDidChange((event) => {
       if (event.wasValid && !event.isValid
@@ -207,15 +202,34 @@ export default {
     return markerElement;
   },
 
+  updateEditorText({ row, startColumn, endColumn, editor }) {
+    const textRange = new Range(
+      new Point(row, startColumn),
+      new Point(row, endColumn),
+    );
+
+    const currTextRange = new Range(
+      new Point(row, startColumn),
+      new Point(row, endColumn + 3),
+    );
+
+    const currentText =  editor.getTextInBufferRange(currTextRange);
+    const text =  editor.getTextInBufferRange(textRange);
+    if (currentText.search(/\s\s\s/) === -1)
+      editor.setTextInBufferRange(textRange, text + '   ');
+  },
+
   createTaMarker({ taName, start, taButtonElement, editor }) {
     const markers = this.markers;
 
     const row = start.row;
-    const startColumn = 0;
-    const endColumn = 1;
+    const startColumn = start.column + 2;
+    const endColumn = start.column + 3;
     const markerClass = 'ta-element';
 
+    this.updateEditorText({ row, startColumn, endColumn, editor });
     const taMarker = this.createMarker({ row, startColumn, endColumn, taButtonElement, editor, markerClass });
+    editor.decorateMarker(taMarker, { type: 'overlay', item: taButtonElement });
     markers.push(taMarker);
   },
 
@@ -233,6 +247,7 @@ export default {
   },
 
   createTaMarkers(result, foundClass, editor) {
+    if (!result.match) return null;
     const taName = result.match[1];
 
     const nameIndex = result.match[0].search(/\"|\'/) + 1;
