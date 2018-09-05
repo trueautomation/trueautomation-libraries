@@ -103,9 +103,7 @@ export default {
   toggle() {
     this.markers = [];
 
-      atom.workspace.observeTextEditors(editor => {
-      const editorElement = atom.views.getView(editor);
-
+    atom.workspace.observeTextEditors(editor => {
       editor.onDidStopChanging(() => {
         const lastEditedPoint = editor.getCursorBufferPosition();
         this.cleanUpLine(editor);
