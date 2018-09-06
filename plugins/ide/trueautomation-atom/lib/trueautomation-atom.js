@@ -104,10 +104,9 @@ export default {
     this.markers = [];
 
     atom.workspace.observeTextEditors(editor => {
-      const editorElement = atom.views.getView(editor);
-
       editor.onDidStopChanging(() => {
         const lastEditedPoint = editor.getCursorBufferPosition();
+        this.cleanUpLine(editor);
         this.cleanUpMarkersForRow(lastEditedPoint.row);
         this.scanForTa(editor);
       });
@@ -157,6 +156,17 @@ export default {
     return taButtonElement;
   },
 
+  cleanUpLine(editor) {
+    editor.scan(/[\s|\(|\=]ta(\s+)\(\s*[\'\"][\'\"]\s*\)/g, {}, async (result) => {
+      const text = result.match[0].replace(/(\S+)\s+/, '$1');
+      editor.setTextInBufferRange(result.range, text);
+      const cursorPosition = editor.getCursorBufferPosition();
+      const overlayLength = 2;
+      const newCursosrPosition = new Point(cursorPosition.row, cursorPosition.column - overlayLength);
+      editor.setCursorBufferPosition(newCursosrPosition);
+    });
+  },
+
   cleanUpMarkersForRow(editedRow) {
     const markers = this.markers;
     const markerElements = [...markers].filter((markerElement) => {
@@ -202,6 +212,30 @@ export default {
     return markerElement;
   },
 
+  updateEditorText({ result, editor }) {
+    const { start, end } = result.range;
+
+    const row = start.row;
+    const taButtonLength = 3;
+    const symbolsBeforeTaNameLength = 3;
+    const startColumn = start.column + symbolsBeforeTaNameLength;
+    const endColumn = startColumn + taButtonLength;
+
+    const textRange = new Range(
+      new Point(row, startColumn),
+      new Point(row, endColumn),
+    );
+
+    const text = editor.getTextInBufferRange(textRange);
+    const presentSpaces = text.search(/\S/);
+
+    if (presentSpaces === -1) return null;
+    const overlaySpaces = ' '.repeat(taButtonLength - presentSpaces);
+
+    editor.setTextInBufferRange(textRange, overlaySpaces + text);
+    return true;
+  },
+
   createTaMarker({ taName, start, taButtonElement, editor }) {
     const markers = this.markers;
 
@@ -211,8 +245,7 @@ export default {
     const markerClass = 'ta-element';
 
     const taMarker = this.createMarker({ row, startColumn, endColumn, taButtonElement, editor, markerClass });
-    editor.decorateMarker(taMarker, { type: 'overlay', item: taButtonElement });
-
+    editor.decorateMarker(taMarker, { type: 'overlay', item: taButtonElement, class: 'ta-element' });
     markers.push(taMarker);
   },
 
@@ -230,9 +263,10 @@ export default {
   },
 
   createTaMarkers(result, foundClass, editor) {
+    if (!result.match) return null;
     const taName = result.match[1];
 
-    const nameIndex = result.match[0].indexOf(taName);
+    const nameIndex = result.match[0].search(/\"|\'/) + 1;
     const { start, end } = result.range;
     const taButtonElement = this.taButton(taName, editor);
 
@@ -251,6 +285,8 @@ export default {
 
   scanForTa(editor) {
     editor.scan(/[\s|\(|\=]ta\s*\(\s*[\'\"]((\w|:)+)[\'\"]\s*\)/g, {}, async (result) => {
+      if (this.updateEditorText({ result, editor })) return null;
+
       const taName = result.match[1];
       const elementsJson = await fetch('http://localhost:9898/ide/findElementsByNames', {
         method: 'POST',
