@@ -112,7 +112,20 @@ export default {
       });
 
       this.scanForTa(editor);
-    })
+    });
+
+    const targets = atom.workspace.element.querySelectorAll('atom-panel-container.left .atom-dock-mask');
+    targets.forEach((target) => {
+      const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutationRecord) {
+          const taButtons = atom.workspace.element.querySelectorAll('.ta-element-button');
+          const leftPanelWidth = target.style.width;
+          taButtons.forEach(taButton => taButton.style.marginLeft = `-${leftPanelWidth}`);
+        });
+      });
+
+      observer.observe(target, { attributes: true, attributeFilter: ['style'] });
+    });
   },
 
   taButton(taName, editor) {
@@ -244,6 +257,13 @@ export default {
     const endColumn = start.column + 3;
     const markerClass = 'ta-element';
 
+    const leftContainers = atom.workspace.element.querySelectorAll('atom-panel-container.left .atom-dock-mask');
+    let marginLeftTaButton = 0;
+    for(let i = 0; i < leftContainers.length; i++) {
+      marginLeftTaButton += parseFloat(leftContainers[i].style.width);
+    }
+
+    taButtonElement.style.marginLeft = `-${marginLeftTaButton}px`;
     const taMarker = this.createMarker({ row, startColumn, endColumn, taButtonElement, editor, markerClass });
     editor.decorateMarker(taMarker, { type: 'overlay', item: taButtonElement, class: 'ta-element' });
     markers.push(taMarker);
