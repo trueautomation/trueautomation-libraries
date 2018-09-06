@@ -216,8 +216,10 @@ export default {
     const { start, end } = result.range;
 
     const row = start.row;
-    const startColumn = start.column + 3;
-    const endColumn = start.column + 6;
+    const taButtonLength = 3;
+    const symbolsBeforeTaNameLength = 3;
+    const startColumn = start.column + symbolsBeforeTaNameLength;
+    const endColumn = startColumn + taButtonLength;
 
     const textRange = new Range(
       new Point(row, startColumn),
@@ -225,12 +227,10 @@ export default {
     );
 
     const text = editor.getTextInBufferRange(textRange);
-    const firstNonSpace = text.search(/\S/);
+    const presentSpaces = text.search(/\S/);
 
-    if (firstNonSpace === -1) return null;
-
-    let overlaySpaces = '';
-    for (let i = 0; i < 3 - firstNonSpace; i++) overlaySpaces += ' ';
+    if (presentSpaces === -1) return null;
+    const overlaySpaces = ' '.repeat(taButtonLength - presentSpaces);
 
     editor.setTextInBufferRange(textRange, overlaySpaces + text);
     return true;
