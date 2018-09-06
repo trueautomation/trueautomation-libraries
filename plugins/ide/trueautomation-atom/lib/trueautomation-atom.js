@@ -112,7 +112,22 @@ export default {
       });
 
       this.scanForTa(editor);
-    })
+    });
+
+    this.fixTaButtonsPosition();
+  },
+
+  fixTaButtonsPosition() {
+    const targets = atom.workspace.element.querySelectorAll('atom-panel-container.left .atom-dock-mask');
+    targets.forEach((target) => {
+      const observer = new MutationObserver((mutations) => {
+        const taButtons = atom.workspace.element.querySelectorAll('.ta-element-button');
+        const leftPanelWidth = target.style.width;
+        taButtons.forEach(taButton => taButton.style.marginLeft = `-${leftPanelWidth}`);
+      });
+
+      observer.observe(target, { attributes: true, attributeFilter: ['style'] });
+    });
   },
 
   taButton(taName, editor) {
@@ -236,6 +251,12 @@ export default {
     return true;
   },
 
+  setPositionOfTaButton(taButtonElement) {
+    const leftContainers = [...atom.workspace.element.querySelectorAll('atom-panel-container.left .atom-dock-mask')];
+    const marginLeftTaButton = leftContainers.reduce((acc, container) => acc + parseFloat(container.style.width), 0);
+    taButtonElement.style.marginLeft = `-${marginLeftTaButton}px`;
+  },
+
   createTaMarker({ taName, start, taButtonElement, editor }) {
     const markers = this.markers;
 
@@ -243,6 +264,8 @@ export default {
     const startColumn = start.column + 2;
     const endColumn = start.column + 3;
     const markerClass = 'ta-element';
+
+    this.setPositionOfTaButton(taButtonElement);
 
     const taMarker = this.createMarker({ row, startColumn, endColumn, taButtonElement, editor, markerClass });
     editor.decorateMarker(taMarker, { type: 'overlay', item: taButtonElement, class: 'ta-element' });
