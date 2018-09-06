@@ -28,7 +28,7 @@ public class TrueAutomationHelper {
      * @param taName  TrueAutomation.IO Element name.
      * @return        By class instance
      */
-    public static String byTa(String taName) {
+    public static By byTa(String taName) {
         return By.cssSelector(ta(taName));
     }
 
