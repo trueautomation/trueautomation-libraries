@@ -1,4 +1,5 @@
 package io.trueautomation.client;
+import org.openqa.selenium.By;
 
 /**
  * TrueAutomationHelper provides provides helper method to use
@@ -20,6 +21,17 @@ package io.trueautomation.client;
  *
  */
 public class TrueAutomationHelper {
+
+    /**
+     * Finds previously recorded element from TrueAutomation.IO objects repository without By class
+     *
+     * @param taName  TrueAutomation.IO Element name.
+     * @return        By class instance
+     */
+    public static String byTa(String taName) {
+        return By.cssSelector(ta(taName));
+    }
+
     /**
      * Find previously recorded element from TrueAutomation.IO objects repository
      *
