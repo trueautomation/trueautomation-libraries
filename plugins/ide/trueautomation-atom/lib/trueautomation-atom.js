@@ -161,7 +161,8 @@ export default {
       const text = result.match[0].replace(/(\S+)\s+/, '$1');
       editor.setTextInBufferRange(result.range, text);
       const cursorPosition = editor.getCursorBufferPosition();
-      const newCursosrPosition = new Point(cursorPosition.row, cursorPosition.column - 2);
+      const overlayLength = 2;
+      const newCursosrPosition = new Point(cursorPosition.row, cursorPosition.column - overlayLength);
       editor.setCursorBufferPosition(newCursosrPosition);
     });
   },
@@ -228,10 +229,10 @@ export default {
 
     if (firstNonSpace === -1) return null;
 
-    let spaces = '';
-    for (let i = 0; i < 3 - firstNonSpace; i++) spaces += ' ';
+    let overlaySpaces = '';
+    for (let i = 0; i < 3 - firstNonSpace; i++) overlaySpaces += ' ';
 
-    editor.setTextInBufferRange(textRange, spaces + text);
+    editor.setTextInBufferRange(textRange, overlaySpaces + text);
     return true;
   },
 
