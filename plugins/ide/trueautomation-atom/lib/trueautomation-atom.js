@@ -252,7 +252,7 @@ export default {
   },
 
   setPositionOfTaButton(taButtonElement) {
-    const leftContainers = [].slice.call(atom.workspace.element.querySelectorAll('atom-panel-container.left .atom-dock-mask'));
+    const leftContainers = [...atom.workspace.element.querySelectorAll('atom-panel-container.left .atom-dock-mask')];
     const marginLeftTaButton = leftContainers.reduce((acc, container) => acc + parseFloat(container.style.width), 0);
     taButtonElement.style.marginLeft = `-${marginLeftTaButton}px`;
   },
