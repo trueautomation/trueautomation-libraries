@@ -4,6 +4,7 @@ import trueautomationAtomProvider from './trueautomation-atom-provider';
 import TrueautomationAtomView from './trueautomation-atom-view';
 import { CompositeDisposable, Range, Point, File } from 'atom';
 import { exec } from 'child_process';
+import killPort from 'kill-port'
 
 import fetch from 'isomorphic-fetch';
 
@@ -26,8 +27,9 @@ export default {
     projectPath = atom.project.rootDirectories[0] && atom.project.rootDirectories[0].path;
 
     const isWin = process.platform === "win32";
-    this.isRunning('trueautomation ide').then((isProcessRunning) => {
-      if (!isWin && !isProcessRunning && projectPath) {
+    const idePort = 9898;
+    if (!isWin && projectPath) {
+      killPort(idePort).then(() => {
         exec(`~/.trueautomation/bin/trueautomation ide`, { cwd: projectPath }, (error) => {
           if (error) {
             this.trueautomationAtomView.setText('Trueatomation is not installed. Please install to use TA plugin');
@@ -37,29 +39,15 @@ export default {
             this.modalPanel.show();
           }
         });
-      }
-    })
-  },
-
-  isRunning(processName) {
-    return new Promise((resolve, reject) => {
-      let platform = process.platform;
-      let cmd = '';
-      switch (platform) {
-          case 'win32' : cmd = `tasklist`; break;
-          case 'darwin' : cmd = `ps -ax | grep "${processName}"`; break;
-          case 'linux' : cmd = `ps -A`; break;
-          default: break;
-      }
-
-      exec(cmd, (err, stdout, stderr) => {
-        const processList = stdout.toLowerCase().
-                            replace(/grep "trueautomation ide"/, '').
-                            replace(/grep trueautomation ide/, '');
-
-        resolve(processList.indexOf(processName.toLowerCase()) > -1)
+      }).catch((err) => {
+        this.trueautomationAtomView.setText('Trueatomation IDE is already runned manually. Please kill the process');
+        this.trueautomationAtomView.setDoneCallback(() => {
+          this.modalPanel.hide();
+        });
+        this.modalPanel.show();
+        return;
       });
-    })
+    }
   },
 
   activate(state) {
