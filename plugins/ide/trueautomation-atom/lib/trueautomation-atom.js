@@ -26,6 +26,7 @@ export default {
   runClientIde() {
     projectPath = atom.project.rootDirectories[0] && atom.project.rootDirectories[0].path;
 
+    console.log("Project path: " + projectPath);
     const isWin = process.platform === "win32";
     const idePort = 9898;
     if (!isWin && projectPath) {
