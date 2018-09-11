@@ -29,8 +29,11 @@ export default {
     const isWin = process.platform === "win32";
     const idePort = 9898;
     if (!isWin && projectPath) {
+      console.log("Kill ide process if exist");
       killPort(idePort).then(() => {
+        console.log("Staring ide process...");
         exec(`~/.trueautomation/bin/trueautomation ide`, { cwd: projectPath }, (error) => {
+          console.log("IDE process started");
           if (error) {
             this.trueautomationAtomView.setText('Trueatomation is not installed. Please install to use TA plugin');
             this.trueautomationAtomView.setDoneCallback(() => {
