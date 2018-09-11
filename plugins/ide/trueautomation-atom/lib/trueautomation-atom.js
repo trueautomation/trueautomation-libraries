@@ -23,6 +23,14 @@ export default {
     return this.p;
   },
 
+  showIdeRunError() {
+    this.trueautomationAtomView.setText('Trueatomation is not installed. Please install to use TA plugin');
+    this.trueautomationAtomView.setDoneCallback(() => {
+      this.modalPanel.hide();
+    });
+    this.modalPanel.show();
+  },
+
   runClientIde() {
     projectPath = atom.project.rootDirectories[0] && atom.project.rootDirectories[0].path;
 
@@ -33,22 +41,20 @@ export default {
       console.log("Kill ide process if exist");
       killPort(idePort).then(() => {
         console.log("Staring ide process...");
-        exec(`~/.trueautomation/bin/trueautomation ide`, { cwd: projectPath }, (error) => {
-          console.log("IDE process started");
+        const ideProcess = exec(`~/.trueautomation/bin/trueautomation ide`, { cwd: projectPath }, (error) => {
           if (error) {
-            this.trueautomationAtomView.setText('Trueatomation is not installed. Please install to use TA plugin');
-            this.trueautomationAtomView.setDoneCallback(() => {
-              this.modalPanel.hide();
-            });
-            this.modalPanel.show();
+            console.log("ERROR: " + error)
+            this.showIdeRunError();
           }
         });
+
+        if (ideProcess) {
+          console.log("IDE process started");
+          this.toggle();
+        }
       }).catch((err) => {
-        this.trueautomationAtomView.setText('Trueatomation IDE is already runned manually. Please kill the process');
-        this.trueautomationAtomView.setDoneCallback(() => {
-          this.modalPanel.hide();
-        });
-        this.modalPanel.show();
+        console.log("ERROR: " + err);
+        this.showIdeRunError();
         return;
       });
     }
@@ -70,6 +76,10 @@ export default {
     this.subscriptions.add(atom.commands.add('atom-workspace', {
       'trueautomation-atom:toggle': () => this.toggle()
     }));
+
+    atom.project.onDidChangePaths(() => {
+      this.runClientIde();
+    })
 
     atom.project.getPaths().forEach((path) => {
       const taConfig = new File(`${path}/trueautomation.json`);
