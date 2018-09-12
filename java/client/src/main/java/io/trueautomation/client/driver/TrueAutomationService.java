@@ -71,11 +71,14 @@ public class TrueAutomationService extends DriverService {
                 argsBuilder.add("--remote");
             }
 
-            if (this.driver != null && this.driverVersion != null) {
+            if (this.driver != null) {
                 argsBuilder.add("--driver");
                 argsBuilder.add(this.driver);
-                argsBuilder.add("--driver-version");
-                argsBuilder.add(this.driverVersion);
+
+                if (this.driverVersion != null) {
+                    argsBuilder.add("--driver-version");
+                    argsBuilder.add(this.driverVersion);
+                }
             }
 
             return argsBuilder.build();
