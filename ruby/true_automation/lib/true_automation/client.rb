@@ -12,8 +12,9 @@ module TrueAutomation
       @port = options[:port] || 9515
       remote = options[:remote]
 
-      if options[:driver] && options[:driver_version]
-        driver_path = " --driver #{options[:driver]} --driver-version #{options[:driver_version]}"
+      if options[:driver]
+        driver_path = " --driver #{options[:driver]}"
+        driver_path += " --driver-version #{options[:driver_version]}" if options[:driver_version]
       end
 
       @executable = ENV['TRUEAUTOMATION_EXEC'] || 'trueautomation'
