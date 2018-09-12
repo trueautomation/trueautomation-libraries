@@ -109,26 +109,11 @@ export default {
       editor.onDidStopChanging(() => {
         const lastEditedPoint = editor.getCursorBufferPosition();
         this.cleanUpLine(editor);
-        this.cleanUpMarkersForRow(lastEditedPoint.row);
+        this.cleanUpMarkersForRow(lastEditedPoint.row, editor);
         this.scanForTa(editor);
       });
 
       this.scanForTa(editor);
-    });
-
-    this.fixTaButtonsPosition();
-  },
-
-  fixTaButtonsPosition() {
-    const targets = atom.workspace.element.querySelectorAll('atom-panel-container.left .atom-dock-mask');
-    targets.forEach((target) => {
-      const observer = new MutationObserver((mutations) => {
-        const taButtons = atom.workspace.element.querySelectorAll('.ta-element-button');
-        const leftPanelWidth = target.style.width;
-        taButtons.forEach(taButton => taButton.style.marginLeft = `-${leftPanelWidth}`);
-      });
-
-      observer.observe(target, { attributes: true, attributeFilter: ['style'] });
     });
   },
 
@@ -184,10 +169,11 @@ export default {
     });
   },
 
-  cleanUpMarkersForRow(editedRow) {
+  cleanUpMarkersForRow(editedRow, editor) {
     const markers = this.markers;
     const markerElements = [...markers].filter((markerElement) => {
-      return markerElement.oldTailScreenPosition.row === editedRow;
+      return markerElement.oldTailScreenPosition.row === editedRow &&
+        (editor.getMarkers().indexOf(markerElement) !== -1);
     });
 
     markerElements.forEach((markerElement) => {
@@ -196,10 +182,11 @@ export default {
     })
   },
 
-  cleanUpMarker(markerRange) {
+  cleanUpMarker(markerRange, editor) {
     const markers = this.markers;
     const markerElement = [...markers].find((markerElement) => {
-      return markerElement.oldTailScreenPosition.isEqual(markerRange.start);
+      return markerElement.oldTailScreenPosition.isEqual(markerRange.start) &&
+        (editor.getMarkers().indexOf(markerElement) !== -1);
     });
 
     if (markerElement) {
@@ -214,7 +201,7 @@ export default {
       new Point(row, endColumn),
     );
 
-    this.cleanUpMarker(markRange);
+    this.cleanUpMarker(markRange, editor);
     const markerElement = editor.markBufferRange(markRange, { invalidate: 'touch' });
 
     editor.decorateMarker(markerElement, { type: 'text', class: markerClass });
@@ -253,12 +240,6 @@ export default {
     return true;
   },
 
-  setPositionOfTaButton(taButtonElement) {
-    const leftContainers = [...atom.workspace.element.querySelectorAll('atom-panel-container.left .atom-dock-mask')];
-    const marginLeftTaButton = leftContainers.reduce((acc, container) => acc + parseFloat(container.style.width), 0);
-    taButtonElement.style.marginLeft = `-${marginLeftTaButton}px`;
-  },
-
   createTaMarker({ taName, start, taButtonElement, editor }) {
     const markers = this.markers;
 
@@ -267,10 +248,8 @@ export default {
     const endColumn = start.column + 3;
     const markerClass = 'ta-element';
 
-    this.setPositionOfTaButton(taButtonElement);
-
     const taMarker = this.createMarker({ row, startColumn, endColumn, taButtonElement, editor, markerClass });
-    editor.decorateMarker(taMarker, { type: 'overlay', item: taButtonElement, class: 'ta-element' });
+    editor.decorateMarker(taMarker, { type: 'overlay', item: taButtonElement, class: 'ta-element', avoidOverflow: false });
     markers.push(taMarker);
   },
 
