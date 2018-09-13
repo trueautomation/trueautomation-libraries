@@ -47,11 +47,12 @@ export default {
             this.showIdeRunError();
           }
         });
-
-        if (ideProcess) {
-          console.log("IDE process started");
-          this.toggle();
-        }
+        setTimeout(() => {
+          if (ideProcess) {
+            console.log("IDE process started");
+            this.toggle();
+          }
+        }, 10000)
       }).catch((err) => {
         console.log("ERROR: " + err);
         this.showIdeRunError();
