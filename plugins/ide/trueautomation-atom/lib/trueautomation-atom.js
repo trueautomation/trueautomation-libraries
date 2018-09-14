@@ -114,6 +114,18 @@ export default {
         this.scanForTa(editor);
       });
 
+      editor.onDidChangeScrollLeft(() => {
+        const visibleColumn = editor.getFirstVisibleScreenColumn();
+        editor.getOverlayDecorations().forEach(overlay => {
+          const properties = overlay.getProperties();
+          if (overlay.marker.oldHeadScreenPosition.column < visibleColumn) {
+            overlay.setProperties({ ...properties, class: 'ta-element-hidden'});
+          } else {
+            overlay.setProperties({ ...properties, class: 'ta-element'});
+          }
+        });
+      });
+
       this.scanForTa(editor);
     });
   },
