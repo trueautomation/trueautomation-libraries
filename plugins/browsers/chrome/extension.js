@@ -20,7 +20,11 @@ function executeExtension() {
       });
     } else {
       const taLayovers = document.getElementsByClassName('ta-layover');
-      if (taLayovers.length === 0) eval(taScript);
+      if (taLayovers.length === 0) {
+        eval(taScript);
+      } else {
+        taLayovers[0].parentElement.removeChild(taLayovers[0]);
+      }
     }
   });
 }
