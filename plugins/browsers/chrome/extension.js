@@ -12,14 +12,15 @@ function executeExtension() {
         return response.text();
       }).then(function(respBody) {
         taScript = respBody;
-        chrome.storage.local.set({ 'taScript': taScript })
+        chrome.storage.local.set({ 'taScript': taScript });
         eval(taScript);
 
       }).catch(function (err) {
         console.log('Error occurred:', err);
       });
     } else {
-      eval(taScript);
+      const taLayovers = document.getElementsByClassName('ta-layover');
+      if (taLayovers.length === 0) eval(taScript);
     }
   });
 }
