@@ -5,6 +5,7 @@ import TrueautomationAtomView from './trueautomation-atom-view';
 import { CompositeDisposable, Range, Point, File } from 'atom';
 import { exec } from 'child_process';
 import killPort from 'kill-port'
+import fs from 'fs'
 
 import fetch from 'isomorphic-fetch';
 
@@ -36,8 +37,9 @@ export default {
 
     console.log("Project path: " + projectPath);
     const isWin = process.platform === "win32";
+    const isTaInitialized = fs.existsSync(`${projectPath}/trueautomation.json`);
     const idePort = 9898;
-    if (!isWin && projectPath) {
+    if (!isWin && projectPath && isTaInitialized) {
       console.log("Kill ide process if exist");
       killPort(idePort).then(() => {
         console.log("Staring ide process...");
