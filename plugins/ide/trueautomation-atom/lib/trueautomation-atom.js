@@ -114,7 +114,7 @@ export default {
         this.scanForTa(editor);
       });
 
-      editor.onDidChangeScrollLeft(() => {
+      editor.element.onDidChangeScrollLeft(() => {
         const visibleColumn = editor.getFirstVisibleScreenColumn();
         editor.getOverlayDecorations().forEach(overlay => {
           const properties = overlay.getProperties();
