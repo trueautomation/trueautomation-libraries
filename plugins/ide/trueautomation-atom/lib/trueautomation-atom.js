@@ -24,14 +24,6 @@ export default {
     return this.p;
   },
 
-  showIdeRunError() {
-    this.trueautomationAtomView.setText('Trueatomation is not installed. Please install to use TA plugin');
-    this.trueautomationAtomView.setDoneCallback(() => {
-      this.modalPanel.hide();
-    });
-    this.modalPanel.show();
-  },
-
   runClientIde() {
     projectPath = atom.project.rootDirectories[0] && atom.project.rootDirectories[0].path;
 
@@ -43,21 +35,24 @@ export default {
       console.log("Kill ide process if exist");
       killPort(idePort).then(() => {
         console.log("Staring ide process...");
+        atom.notifications.addInfo("Starting TrueAutomation IDE ...");
         const ideProcess = exec(`~/.trueautomation/bin/trueautomation ide`, { cwd: projectPath }, (error) => {
           if (error) {
-            console.log("ERROR: " + error)
-            this.showIdeRunError();
+            console.log("ERROR: " + error);
+            atom.notifications.addError("ERROR: " + error);
+            return;
           }
         });
         setTimeout(() => {
-          if (ideProcess) {
+          if (!ideProcess.exitCode) {
             console.log("IDE process started");
+            atom.notifications.addSuccess("TrueAutomation IDE is started successfully!");
             this.toggle();
           }
         }, 10000)
       }).catch((err) => {
         console.log("ERROR: " + err);
-        this.showIdeRunError();
+        atom.notifications.addError("ERROR: " + err);
         return;
       });
     }
