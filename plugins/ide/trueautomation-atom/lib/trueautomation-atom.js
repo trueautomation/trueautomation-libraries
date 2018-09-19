@@ -114,7 +114,7 @@ export default {
         this.scanForTa(editor);
       });
 
-      editor.onDidChangeScrollLeft(() => {
+      editor.element.onDidChangeScrollLeft(() => {
         const visibleColumn = editor.getFirstVisibleScreenColumn();
         editor.getOverlayDecorations().forEach(overlay => {
           const properties = overlay.getProperties();
@@ -174,7 +174,7 @@ export default {
   cleanUpLine(editor) {
     editor.scan(/[\s|\(|\=]ta(\s+)\(\s*[\'\"][\'\"]\s*\)/g, {}, async (result) => {
       const text = result.match[0].replace(/(\S+)\s+/, '$1');
-      editor.setTextInBufferRange(result.range, text);
+      editor.setTextInBufferRange(result.range, text, { undo: 'skip' });
       const cursorPosition = editor.getCursorBufferPosition();
       const overlayLength = 2;
       const newCursosrPosition = new Point(cursorPosition.row, cursorPosition.column - overlayLength);
@@ -249,7 +249,7 @@ export default {
     if (presentSpaces === -1) return null;
     const overlaySpaces = ' '.repeat(taButtonLength - presentSpaces);
 
-    editor.setTextInBufferRange(textRange, overlaySpaces + text);
+    editor.setTextInBufferRange(textRange, overlaySpaces + text, { undo: 'skip' });
     return true;
   },
 
