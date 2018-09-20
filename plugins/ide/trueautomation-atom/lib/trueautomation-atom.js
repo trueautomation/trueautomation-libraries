@@ -231,26 +231,21 @@ export default {
     const { start, end } = result.range;
     const row = start.row;
     const taButtonLength = 3;
-    let presentSpaces = 0;
 
-    while (presentSpaces < 3) {
-      const startColumn = start.column + nameIndex - presentSpaces - 1;
-      const endColumn = startColumn + 1;
+    const presentSpaces = result.match[1].length;
+    const startColumn = start.column + nameIndex - presentSpaces - 1;
+    const endColumn = startColumn + 1;
 
-      const textRange = new Range(
-        new Point(row, startColumn),
-        new Point(row, endColumn),
-      );
+    const textRange = new Range(
+      new Point(row, startColumn),
+      new Point(row, endColumn),
+    );
 
-      const text = editor.getTextInBufferRange(textRange);
-      if (text !== ' ') {
-        const overlaySpaces = ' '.repeat(taButtonLength - presentSpaces);
-        editor.setTextInBufferRange(textRange, text + overlaySpaces, { undo: 'skip' });
-        break;
-      }
-      presentSpaces += 1;
-    }
-    if (presentSpaces === 3) return null;
+    const text = editor.getTextInBufferRange(textRange);
+
+    if (presentSpaces >= taButtonLength) return null;
+    const overlaySpaces = ' '.repeat(taButtonLength - presentSpaces);
+    editor.setTextInBufferRange(textRange, text + overlaySpaces, { undo: 'skip' });
     return true;
   },
 
@@ -282,7 +277,7 @@ export default {
 
   createTaMarkers(result, foundClass, editor) {
     if (!result.match) return null;
-    const taName = result.match[1];
+    const taName = result.match[2];
 
     const nameIndex = result.match[0].search(/\"|\'/) + 1;
     const { start, end } = result.range;
@@ -302,10 +297,10 @@ export default {
   },
 
   scanForTa(editor) {
-    editor.scan(/[\s|\(|\=]ta\s*\(\s*[\'\"]((\w|:)+)[\'\"]\s*\)/g, {}, async (result) => {
+    editor.scan(/[\s|\(|\=]ta\s*\((\s*)[\'\"]((\w|:)+)[\'\"]\s*\)/g, {}, async (result) => {
       if (this.updateEditorText({ result, editor })) return null;
 
-      const taName = result.match[1];
+      const taName = result.match[2];
       const elementsJson = await fetch('http://localhost:9898/ide/findElementsByNames', {
         method: 'POST',
         headers: {
