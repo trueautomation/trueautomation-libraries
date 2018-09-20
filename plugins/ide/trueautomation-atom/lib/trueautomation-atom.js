@@ -24,14 +24,6 @@ export default {
     return this.p;
   },
 
-  showIdeRunError() {
-    this.trueautomationAtomView.setText('Trueatomation is not installed. Please install to use TA plugin');
-    this.trueautomationAtomView.setDoneCallback(() => {
-      this.modalPanel.hide();
-    });
-    this.modalPanel.show();
-  },
-
   runClientIde() {
     projectPath = atom.project.rootDirectories[0] && atom.project.rootDirectories[0].path;
 
@@ -43,21 +35,24 @@ export default {
       console.log("Kill ide process if exist");
       killPort(idePort).then(() => {
         console.log("Staring ide process...");
+        atom.notifications.addInfo("Starting TrueAutomation IDE ...");
         const ideProcess = exec(`~/.trueautomation/bin/trueautomation ide`, { cwd: projectPath }, (error) => {
           if (error) {
-            console.log("ERROR: " + error)
-            this.showIdeRunError();
+            console.log("ERROR: " + error);
+            atom.notifications.addError("ERROR: " + error);
+            return;
           }
         });
         setTimeout(() => {
-          if (ideProcess) {
+          if (!ideProcess.exitCode) {
             console.log("IDE process started");
+            atom.notifications.addSuccess("TrueAutomation IDE is started successfully!");
             this.toggle();
           }
         }, 10000)
       }).catch((err) => {
         console.log("ERROR: " + err);
-        this.showIdeRunError();
+        atom.notifications.addError("ERROR: " + err);
         return;
       });
     }
@@ -82,7 +77,7 @@ export default {
 
     atom.project.onDidChangePaths(() => {
       this.runClientIde();
-    })
+    });
 
     atom.project.getPaths().forEach((path) => {
       const taConfig = new File(`${path}/trueautomation.json`);
@@ -174,8 +169,8 @@ export default {
   },
 
   cleanUpLine(editor) {
-    editor.scan(/[\s|\(|\=]ta(\s+)\(\s*[\'\"][\'\"]\s*\)/g, {}, async (result) => {
-      const text = result.match[0].replace(/(\S+)\s+/, '$1');
+    editor.scan(/[\s|\(|\=]ta\s*\((\s+)[\'\"][\'\"]\s*\)/g, {}, async (result) => {
+      const text = result.match[0].replace(/(\()\s+/, '$1');
       editor.setTextInBufferRange(result.range, text, { undo: 'skip' });
       const cursorPosition = editor.getCursorBufferPosition();
       const overlayLength = 2;
@@ -232,13 +227,14 @@ export default {
   },
 
   updateEditorText({ result, editor }) {
+    const nameIndex = result.match[0].search(/\"|\'/);
     const { start, end } = result.range;
-
     const row = start.row;
     const taButtonLength = 3;
-    const symbolsBeforeTaNameLength = 3;
-    const startColumn = start.column + symbolsBeforeTaNameLength;
-    const endColumn = startColumn + taButtonLength;
+
+    const presentSpaces = result.match[1].length;
+    const startColumn = start.column + nameIndex - presentSpaces - 1;
+    const endColumn = startColumn + 1;
 
     const textRange = new Range(
       new Point(row, startColumn),
@@ -246,21 +242,19 @@ export default {
     );
 
     const text = editor.getTextInBufferRange(textRange);
-    const presentSpaces = text.search(/\S/);
 
-    if (presentSpaces === -1) return null;
+    if (presentSpaces >= taButtonLength) return null;
     const overlaySpaces = ' '.repeat(taButtonLength - presentSpaces);
-
-    editor.setTextInBufferRange(textRange, overlaySpaces + text, { undo: 'skip' });
+    editor.setTextInBufferRange(textRange, text + overlaySpaces, { undo: 'skip' });
     return true;
   },
 
-  createTaMarker({ taName, start, taButtonElement, editor }) {
+  createTaMarker({ taName, start, taButtonElement, editor, foundClass, nameIndex }) {
     const markers = this.markers;
 
     const row = start.row;
-    const startColumn = start.column + 2;
-    const endColumn = start.column + 3;
+    const startColumn = start.column + nameIndex - 5; //Overlay spaces = 3, quotes = 1
+    const endColumn = startColumn + 1;
     const markerClass = 'ta-element';
 
     const taMarker = this.createMarker({ row, startColumn, endColumn, taButtonElement, editor, markerClass });
@@ -283,7 +277,7 @@ export default {
 
   createTaMarkers(result, foundClass, editor) {
     if (!result.match) return null;
-    const taName = result.match[1];
+    const taName = result.match[2];
 
     const nameIndex = result.match[0].search(/\"|\'/) + 1;
     const { start, end } = result.range;
@@ -303,10 +297,10 @@ export default {
   },
 
   scanForTa(editor) {
-    editor.scan(/[\s|\(|\=]ta\s*\(\s*[\'\"]((\w|:)+)[\'\"]\s*\)/g, {}, async (result) => {
+    editor.scan(/[\s|\(|\=]ta\s*\((\s*)[\'\"]((\w|:)+)[\'\"]\s*\)/g, {}, async (result) => {
       if (this.updateEditorText({ result, editor })) return null;
 
-      const taName = result.match[1];
+      const taName = result.match[2];
       const elementsJson = await fetch('http://localhost:9898/ide/findElementsByNames', {
         method: 'POST',
         headers: {

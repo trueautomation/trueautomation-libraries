@@ -22,7 +22,10 @@ For local test need to do
      ```
   
   3. Build artifact **trueautomation-client.jar**
-  
+     ```bash
+     cd java/client
+     mvn package
+     ```
   4. Install library
      ```
      mvn install:install-file \
