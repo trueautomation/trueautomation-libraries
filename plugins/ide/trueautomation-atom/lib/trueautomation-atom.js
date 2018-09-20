@@ -246,7 +246,7 @@ export default {
       if (text !== ' ') {
         const overlaySpaces = ' '.repeat(taButtonLength - presentSpaces);
         editor.setTextInBufferRange(textRange, text + overlaySpaces, { undo: 'skip' });
-        presentSpaces = 0;
+        presentSpaces = 3;
         break;
       }
       presentSpaces += 1;
@@ -306,6 +306,7 @@ export default {
     editor.scan(/[\s|\(|\=]ta\s*\(\s*[\'\"]((\w|:)+)[\'\"]\s*\)/g, {}, async (result) => {
       if (this.updateEditorText({ result, editor })) return null;
 
+      if (!result.match) return null;
       const taName = result.match[1];
       const elementsJson = await fetch('http://localhost:9898/ide/findElementsByNames', {
         method: 'POST',
