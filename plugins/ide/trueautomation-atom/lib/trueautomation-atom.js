@@ -246,7 +246,6 @@ export default {
       if (text !== ' ') {
         const overlaySpaces = ' '.repeat(taButtonLength - presentSpaces);
         editor.setTextInBufferRange(textRange, text + overlaySpaces, { undo: 'skip' });
-        presentSpaces = 3;
         break;
       }
       presentSpaces += 1;
