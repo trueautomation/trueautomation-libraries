@@ -77,7 +77,7 @@ export default {
 
     atom.project.onDidChangePaths(() => {
       this.runClientIde();
-    })
+    });
 
     atom.project.getPaths().forEach((path) => {
       const taConfig = new File(`${path}/trueautomation.json`);
@@ -169,8 +169,8 @@ export default {
   },
 
   cleanUpLine(editor) {
-    editor.scan(/[\s|\(|\=]ta(\s+)\(\s*[\'\"][\'\"]\s*\)/g, {}, async (result) => {
-      const text = result.match[0].replace(/(\S+)\s+/, '$1');
+    editor.scan(/[\s|\(|\=]ta\s*\((\s+)[\'\"][\'\"]\s*\)/g, {}, async (result) => {
+      const text = result.match[0].replace(/(\()\s+/, '$1');
       editor.setTextInBufferRange(result.range, text, { undo: 'skip' });
       const cursorPosition = editor.getCursorBufferPosition();
       const overlayLength = 2;
@@ -227,35 +227,40 @@ export default {
   },
 
   updateEditorText({ result, editor }) {
+    const nameIndex = result.match[0].search(/\"|\'/);
     const { start, end } = result.range;
-
     const row = start.row;
     const taButtonLength = 3;
-    const symbolsBeforeTaNameLength = 3;
-    const startColumn = start.column + symbolsBeforeTaNameLength;
-    const endColumn = startColumn + taButtonLength;
+    let presentSpaces = 0;
 
-    const textRange = new Range(
-      new Point(row, startColumn),
-      new Point(row, endColumn),
-    );
+    while (presentSpaces < 3) {
+      const startColumn = start.column + nameIndex - presentSpaces - 1;
+      const endColumn = startColumn + 1;
 
-    const text = editor.getTextInBufferRange(textRange);
-    const presentSpaces = text.search(/\S/);
+      const textRange = new Range(
+        new Point(row, startColumn),
+        new Point(row, endColumn),
+      );
 
-    if (presentSpaces === -1) return null;
-    const overlaySpaces = ' '.repeat(taButtonLength - presentSpaces);
-
-    editor.setTextInBufferRange(textRange, overlaySpaces + text, { undo: 'skip' });
+      const text = editor.getTextInBufferRange(textRange);
+      if (text !== ' ') {
+        const overlaySpaces = ' '.repeat(taButtonLength - presentSpaces);
+        editor.setTextInBufferRange(textRange, text + overlaySpaces, { undo: 'skip' });
+        presentSpaces = 0;
+        break;
+      }
+      presentSpaces += 1;
+    }
+    if (presentSpaces === 3) return null;
     return true;
   },
 
-  createTaMarker({ taName, start, taButtonElement, editor }) {
+  createTaMarker({ taName, start, taButtonElement, editor, foundClass, nameIndex }) {
     const markers = this.markers;
 
     const row = start.row;
-    const startColumn = start.column + 2;
-    const endColumn = start.column + 3;
+    const startColumn = start.column + nameIndex - 5; //Overlay spaces = 3, quotes = 1
+    const endColumn = startColumn + 1;
     const markerClass = 'ta-element';
 
     const taMarker = this.createMarker({ row, startColumn, endColumn, taButtonElement, editor, markerClass });
