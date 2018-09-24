@@ -36,10 +36,9 @@ export default {
       killPort(idePort).then(() => {
         console.log("Staring ide process...");
         atom.notifications.addInfo("Starting TrueAutomation IDE ...");
-        const ideProcess = exec(`~/.trueautomation/bin/trueautomation ide`, { cwd: projectPath }, (error) => {
+        const ideProcess = exec(`~/.trueautomation/bin/trueautomation ide`, { cwd: projectPath }, (error, stdout, stderr) => {
           if (error) {
-            console.log("ERROR: " + error);
-            atom.notifications.addError("ERROR: " + error);
+            atom.notifications.addError(stdout + "\n" + stderr, { dismissable: true });
             return;
           }
         });
