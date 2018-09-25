@@ -10,11 +10,18 @@
   "permissions": [
     "activeTab",
     "storage",
+    "contextMenus",
     "http://*/*",
     "https://*/*"
   ],
   "background": {
     "scripts": ["background.js"],
     "persistent": true
-  }
+  },
+  "content_scripts": [{
+    "matches": ["*://*/*"],
+    "js": [
+      "content_script.js"
+    ]
+  }]
 }
