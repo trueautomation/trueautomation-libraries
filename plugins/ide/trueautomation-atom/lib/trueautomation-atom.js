@@ -99,8 +99,8 @@ export default {
     this.modalPanel.destroy();
     this.subscriptions.dispose();
     this.trueautomationAtomView.destroy();
-    const items = atom.workspace.getPaneItems();
-    items.forEach(editor => this.cleanTaSpaces(editor));
+    const editors = atom.workspace.getTextEditors();
+    editors.forEach(editor => this.cleanTaSpaces(editor));
   },
 
   serialize() {
@@ -112,7 +112,10 @@ export default {
   toggle() {
     this.markers = [];
 
-    atom.workspace.onDidDestroyPaneItem(event => this.cleanTaSpaces(event.item));
+    atom.workspace.onDidDestroyPaneItem((event) => {
+      const editors = atom.workspace.getTextEditors();
+      if (editors.includes(event.item)) this.cleanTaSpaces(event.item);
+    });
 
     atom.workspace.observeTextEditors(editor => {
       editor.onDidStopChanging(() => {
