@@ -57,6 +57,14 @@ export default {
     }
   },
 
+  cleanTaSpaces(editor) {
+    editor.scan(/[\s|\(|\=]ta\s*\((\s+)[\'\"](\w|:)+[\'\"]\s*\)/g, {}, async (result) => {
+      const text = result.match[0].replace(/(\()\s+/, '$1');
+      editor.setTextInBufferRange(result.range, text, { undo: 'skip' });
+    });
+    editor.save();
+  },
+
   activate(state) {
     this.trueautomationAtomView = new TrueautomationAtomView(state.trueautomationAtomViewState);
     this.modalPanel = atom.workspace.addModalPanel({
@@ -91,6 +99,8 @@ export default {
     this.modalPanel.destroy();
     this.subscriptions.dispose();
     this.trueautomationAtomView.destroy();
+    const items = atom.workspace.getPaneItems();
+    items.forEach(editor => this.cleanTaSpaces(editor));
   },
 
   serialize() {
@@ -101,6 +111,8 @@ export default {
 
   toggle() {
     this.markers = [];
+
+    atom.workspace.onDidDestroyPaneItem(event => this.cleanTaSpaces(event.item));
 
     atom.workspace.observeTextEditors(editor => {
       editor.onDidStopChanging(() => {
@@ -245,6 +257,7 @@ export default {
     if (presentSpaces >= taButtonLength) return null;
     const overlaySpaces = ' '.repeat(taButtonLength - presentSpaces);
     editor.setTextInBufferRange(textRange, text + overlaySpaces, { undo: 'skip' });
+    editor.save();
     return true;
   },
 
