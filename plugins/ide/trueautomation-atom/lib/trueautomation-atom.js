@@ -2,7 +2,7 @@
 
 import trueautomationAtomProvider from './trueautomation-atom-provider';
 import TrueautomationAtomView from './trueautomation-atom-view';
-import { CompositeDisposable, Range, Point, File } from 'atom';
+import { TextEditor, CompositeDisposable, Range, Point, File } from 'atom';
 import { exec } from 'child_process';
 import killPort from 'kill-port'
 import fs from 'fs'
@@ -99,8 +99,8 @@ export default {
     this.modalPanel.destroy();
     this.subscriptions.dispose();
     this.trueautomationAtomView.destroy();
-    const items = atom.workspace.getPaneItems();
-    items.forEach(editor => this.cleanTaSpaces(editor));
+    const editors = atom.workspace.getTextEditors();
+    editors.forEach(editor => this.cleanTaSpaces(editor));
   },
 
   serialize() {
@@ -112,7 +112,9 @@ export default {
   toggle() {
     this.markers = [];
 
-    atom.workspace.onDidDestroyPaneItem(event => this.cleanTaSpaces(event.item));
+    atom.workspace.onDidDestroyPaneItem((event) => {
+      if (event.item instanceof TextEditor) this.cleanTaSpaces(event.item);
+    });
 
     atom.workspace.observeTextEditors(editor => {
       editor.onDidStopChanging(() => {
