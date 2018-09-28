@@ -58,7 +58,7 @@ export default {
   },
 
   cleanTaSpaces(editor) {
-    editor.scan(/[\s|\(|\=]ta\s*\((\s+)[\'\"](\w|:)+[\'\"]\s*\)/g, {}, async (result) => {
+    editor.scan(/[\s|\(|\=](ta|byTa)\s*\((\s+)[\'\"](\w|:)+[\'\"]\s*\)/g, {}, async (result) => {
       const text = result.match[0].replace(/(\()\s+/, '$1');
       editor.setTextInBufferRange(result.range, text, { undo: 'skip' });
     });
@@ -182,7 +182,7 @@ export default {
   },
 
   cleanUpLine(editor) {
-    editor.scan(/[\s|\(|\=]ta\s*\((\s+)[\'\"][\'\"]\s*\)/g, {}, async (result) => {
+    editor.scan(/[\s|\(|\=](ta|byTa)\s*\((\s+)[\'\"][\'\"]\s*\)/g, {}, async (result) => {
       const text = result.match[0].replace(/(\()\s+/, '$1');
       editor.setTextInBufferRange(result.range, text, { undo: 'skip' });
       const cursorPosition = editor.getCursorBufferPosition();
@@ -245,7 +245,7 @@ export default {
     const row = start.row;
     const taButtonLength = 3;
 
-    const presentSpaces = result.match[1].length;
+    const presentSpaces = result.match[2].length;
     const startColumn = start.column + nameIndex - presentSpaces - 1;
     const endColumn = startColumn + 1;
 
@@ -291,7 +291,7 @@ export default {
 
   createTaMarkers(result, foundClass, editor) {
     if (!result.match) return null;
-    const taName = result.match[2];
+    const taName = result.match[3];
 
     const nameIndex = result.match[0].search(/\"|\'/) + 1;
     const { start, end } = result.range;
@@ -311,10 +311,10 @@ export default {
   },
 
   scanForTa(editor) {
-    editor.scan(/[\s|\(|\=]ta\s*\((\s*)[\'\"]((\w|:)+)[\'\"]\s*\)/g, {}, async (result) => {
+    editor.scan(/[\s|\(|\=](ta|byTa)\s*\((\s*)[\'\"]((\w|:)+)[\'\"]\s*\)/g, {}, async (result) => {
       if (this.updateEditorText({ result, editor })) return null;
 
-      const taName = result.match[2];
+      const taName = result.match[3];
       const elementsJson = await fetch('http://localhost:9898/ide/findElementsByNames', {
         method: 'POST',
         headers: {
