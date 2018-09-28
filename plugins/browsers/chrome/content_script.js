@@ -5,6 +5,18 @@ document.addEventListener("mousedown", (event) => {
   clickedElement = event.target;
 }, true);
 
+const iframes = [...document.getElementsByTagName('iframe')];
+if (iframes.length > 0) {
+  iframes.forEach((iframe) => {
+    const doc = iframe.contentDocument;
+    if (doc) {
+      doc.addEventListener('mousedown', (event) => {
+        clickedElement = event.target;
+      });
+    }
+  });
+}
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     selectElementHandler(clickedElement);
   }
