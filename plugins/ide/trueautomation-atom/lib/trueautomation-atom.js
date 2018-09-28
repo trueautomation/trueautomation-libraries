@@ -58,7 +58,7 @@ export default {
   },
 
   cleanTaSpaces(editor) {
-    editor.scan(/[\s|\(|\=](ta|byTa)\s*\((\s+)[\'\"](\w|:)+[\'\"]\s*\)/g, {}, async (result) => {
+    editor.scan(/[\s|\(|\=](ta|byTa|@FindByTA)\s*\((\s+|\s*taName\s*\=\s+)[\'\"]((\w|:)+)[\'\"]\s*\)/g, {}, async (result) => {
       const text = result.match[0].replace(/(\()\s+/, '$1');
       editor.setTextInBufferRange(result.range, text, { undo: 'skip' });
     });
@@ -182,8 +182,8 @@ export default {
   },
 
   cleanUpLine(editor) {
-    editor.scan(/[\s|\(|\=](ta|byTa)\s*\((\s+)[\'\"][\'\"]\s*\)/g, {}, async (result) => {
-      const text = result.match[0].replace(/(\()\s+/, '$1');
+    editor.scan(/[\s|\(|\=](ta|byTa|@FindByTA)\s*\((\s+|\s*taName\s*\=\s+)[\'\"][\'\"]\s*\)/g, {}, async (result) => {
+      const text = result.match[0].replace(/\s+(\'|\")/, '$1');
       editor.setTextInBufferRange(result.range, text, { undo: 'skip' });
       const cursorPosition = editor.getCursorBufferPosition();
       const overlayLength = 2;
@@ -245,7 +245,8 @@ export default {
     const row = start.row;
     const taButtonLength = 3;
 
-    const presentSpaces = result.match[2].length;
+    const taNameEq = result.match[2].search("=");
+    const presentSpaces = result.match[2].length - taNameEq - 1;
     const startColumn = start.column + nameIndex - presentSpaces - 1;
     const endColumn = startColumn + 1;
 
@@ -311,7 +312,7 @@ export default {
   },
 
   scanForTa(editor) {
-    editor.scan(/[\s|\(|\=](ta|byTa)\s*\((\s*)[\'\"]((\w|:)+)[\'\"]\s*\)/g, {}, async (result) => {
+    editor.scan(/[\s|\(|\=](ta|byTa|@FindByTA)\s*\((\s*|\s*taName\s*\=\s*)[\'\"]((\w|:)+)[\'\"]\s*\)/g, {}, async (result) => {
       if (this.updateEditorText({ result, editor })) return null;
 
       const taName = result.match[3];
