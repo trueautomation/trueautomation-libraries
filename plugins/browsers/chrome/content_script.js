@@ -1,8 +1,9 @@
-//content script
-var clickedElement;
+let clickedElement;
+let currentDocument;
 
 document.addEventListener("mousedown", (event) => {
   clickedElement = event.target;
+  currentDocument = document;
 }, true);
 
 const iframes = [...document.getElementsByTagName('iframe')];
@@ -12,20 +13,21 @@ if (iframes.length > 0) {
     if (doc) {
       doc.addEventListener('mousedown', (event) => {
         clickedElement = event.target;
+        currentDocument = doc;
       });
     }
   });
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    selectElementHandler(clickedElement);
+    selectElementHandler(currentDocument, clickedElement);
   }
 );
 
-const selectElementHandler = (currentElement) => {
+const selectElementHandler = (currentDocument, currentElement) => {
   const trueautomationLocalIdeServerUrl = 'http://localhost:9898';
   const address = findElementAddress(currentElement);
-  const htmlJson = JSON.stringify(findNodeCss(document.documentElement));
+  const htmlJson = JSON.stringify(findNodeCss(currentDocument.documentElement));
 
   fetch(`${trueautomationLocalIdeServerUrl}/browser/selectElement`, {
     method: 'POST',
