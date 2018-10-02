@@ -117,6 +117,7 @@ export default {
     });
 
     atom.workspace.onDidChangeActiveTextEditor(editor => {
+      if (!editor || !(editor instanceof TextEditor)) return;
       this.cleanUpLine(editor);
       this.scanForTa(editor);
     });
