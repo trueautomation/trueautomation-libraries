@@ -25,7 +25,7 @@ export default {
   },
 
   runClientIde() {
-    projectPath = atom.project.rootDirectories[0] && atom.project.rootDirectories[0].path;
+    const projectPath = atom.project.rootDirectories[0] && atom.project.rootDirectories[0].path;
 
     console.log("Project path: " + projectPath);
     const isWin = process.platform === "win32";
@@ -114,6 +114,11 @@ export default {
 
     atom.workspace.onDidDestroyPaneItem((event) => {
       if (event.item instanceof TextEditor) this.cleanTaSpaces(event.item);
+    });
+
+    atom.workspace.onDidChangeActiveTextEditor(editor => {
+      this.cleanUpLine(editor);
+      this.scanForTa(editor);
     });
 
     atom.workspace.observeTextEditors(editor => {
