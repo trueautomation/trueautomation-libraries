@@ -113,7 +113,7 @@ export default {
     this.markers = [];
 
     atom.workspace.onDidDestroyPaneItem((event) => {
-      if (event.item instanceof TextEditor) this.cleanTaSpaces(event.item);
+      if (event.item instanceof TextEditor && fs.existsSync(event.item.getPath())) this.cleanTaSpaces(event.item);
     });
 
     atom.workspace.onDidChangeActiveTextEditor(editor => {
