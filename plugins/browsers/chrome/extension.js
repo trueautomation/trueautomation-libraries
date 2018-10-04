@@ -14,7 +14,6 @@ function executeExtension() {
         taScript = respBody;
         chrome.storage.local.set({ 'taScript': taScript });
         eval(taScript);
-
       }).catch(function (err) {
         console.log('Error occurred:', err);
       });
@@ -23,6 +22,7 @@ function executeExtension() {
       if (taLayovers.length === 0) {
         eval(taScript);
       } else {
+        window.enableAllUserEvents();
         taLayovers[0].parentElement.removeChild(taLayovers[0]);
       }
     }
