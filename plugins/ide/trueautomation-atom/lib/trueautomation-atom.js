@@ -2,12 +2,17 @@
 
 import trueautomationAtomProvider from './trueautomation-atom-provider';
 import TrueautomationAtomView from './trueautomation-atom-view';
-import { TextEditor, CompositeDisposable, Range, Point, File } from 'atom';
+import { TextEditor, CompositeDisposable, Range, Point, File, BufferedProcess } from 'atom';
 import { exec } from 'child_process';
 import killPort from 'kill-port'
 import fs from 'fs'
 
+
 import fetch from 'isomorphic-fetch';
+
+const TAExampleURL = 'https://trueautomation.io/';
+
+const MacChromeCmd = `do shell script "open -a 'Google Chrome' '${TAExampleURL}'"`
 
 export default {
   trueautomationAtomView: null,
@@ -22,6 +27,16 @@ export default {
     }
 
     return this.p;
+  },
+
+  runMacCmd() {
+    new BufferedProcess({
+      command: 'osascript',
+      args: ['-e', MacChromeCmd],
+      stderr: (data) => {
+        console.log('Error: ' + data.toString())
+      }
+    })
   },
 
   runClientIde() {
@@ -163,7 +178,7 @@ export default {
     taButtonElement.addEventListener('click', async (event) => {
       console.log('Element clicked:', taName);
 
-      await fetch('http://localhost:9898/ide/selectElement', {
+      const response = await fetch('http://localhost:9898/ide/selectElement', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -172,17 +187,21 @@ export default {
         body: JSON.stringify({ name: taName }),
       });
 
-      this.trueautomationAtomView.setText(`Choose element for '${taName}' locator in your Chrome browser`);
-      this.trueautomationAtomView.setDoneCallback(() => {
-        this.modalPanel.hide();
-        if (markers && markers.length > 0) {
-          for (let i = 0; i < markers.length; i++) {
-            markers[i].destroy();
+      if (response.status === 200) {
+        this.trueautomationAtomView.setText(`Choose element for '${taName}' locator in your Chrome browser`);
+        this.trueautomationAtomView.setDoneCallback(() => {
+          this.modalPanel.hide();
+          if (markers && markers.length > 0) {
+            for (let i = 0; i < markers.length; i++) {
+              markers[i].destroy();
+            }
           }
-        }
-        this.scanForTa(editor);
-      });
-      this.modalPanel.show();
+          this.scanForTa(editor);
+        });
+        this.modalPanel.show();
+
+        this.runMacCmd()
+      }
     });
 
     return taButtonElement;
