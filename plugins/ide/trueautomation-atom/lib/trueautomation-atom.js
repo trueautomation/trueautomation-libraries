@@ -53,7 +53,8 @@ export default {
         atom.notifications.addInfo("Starting TrueAutomation IDE ...");
         const ideProcess = exec(`~/.trueautomation/bin/trueautomation ide`, { cwd: projectPath }, (error, stdout, stderr) => {
           if (error) {
-            const err = (stdout + "\n" + stderr).match(/^.*error.*$/m)[0];
+            let err = (stdout + "\n" + stderr).match(/^.*error.*$/m);
+            err = err ? err[0] : error;
             atom.notifications.addError(err, { dismissable: true });
             return;
           }
