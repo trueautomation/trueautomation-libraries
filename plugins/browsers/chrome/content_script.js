@@ -20,7 +20,17 @@ if (iframes.length > 0) {
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    selectElementHandler(currentDocument, clickedElement);
+    const trueautomationLocalIdeServerUrl = 'http://localhost:9898';
+
+    fetch(`${trueautomationLocalIdeServerUrl}/browser/currentElement`).then(response => response.json()).then((json) => {
+      const elementName = json.name;
+
+      if (!elementName) {
+        alert('There is no TA locator to select. Use your IDE to select TA locator');
+        return;
+      }
+      selectElementHandler(currentDocument, clickedElement);
+    })
   }
 );
 
