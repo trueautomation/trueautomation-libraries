@@ -63,7 +63,7 @@ export default {
 
   cleanTaSpaces(editor) {
     editor.scan(/[\s|\(|\=](ta|byTa|@FindByTA)\s*\((\s+|\s*taName\s*\=\s+)[\'\"]((\w|:)+)[\'\"]\s*\)/g, {}, async (result) => {
-      const text = result.match[0].replace(/(\()\s+/, '$1');
+      const text = result.match[0].replace(/(\(|\(\s*taName\s*\=)\s+/, '$1');
       editor.setTextInBufferRange(result.range, text, { undo: 'skip' });
     });
     editor.save();
@@ -269,7 +269,9 @@ export default {
 
     if (presentSpaces >= taButtonLength) return null;
     const overlaySpaces = ' '.repeat(taButtonLength - presentSpaces);
-    editor.setTextInBufferRange(textRange, text + overlaySpaces, { undo: 'skip' });
+    editor.setTextInBufferRange(textRange, text + overlaySpaces);
+    const buffer = editor.getBuffer();
+    buffer.groupLastChanges();
     editor.save();
     return true;
   },
@@ -281,6 +283,12 @@ export default {
     const startColumn = start.column + nameIndex - 5; //Overlay spaces = 3, quotes = 1
     const endColumn = startColumn + 1;
     const markerClass = 'ta-element';
+
+    const textRange = new Range(
+      new Point(row, startColumn + 1),
+      new Point(row, endColumn + 3),
+    );
+    if (editor.getTextInBufferRange(textRange) !== '   ') return;
 
     const taMarker = this.createMarker({ row, startColumn, endColumn, taButtonElement, editor, markerClass });
     editor.decorateMarker(taMarker, { type: 'overlay', item: taButtonElement, class: 'ta-element', avoidOverflow: false });
