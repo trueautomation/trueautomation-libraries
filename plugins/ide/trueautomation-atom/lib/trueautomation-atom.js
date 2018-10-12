@@ -50,11 +50,12 @@ export default {
       console.log("Kill ide process if exist");
       killPort(idePort).then(() => {
         console.log("Staring ide process...");
-        atom.notifications.addInfo("Starting TrueAutomation IDE ...");
+        const notification = atom.notifications.addInfo("Starting TrueAutomation IDE ...", { dismissable: true });
         const ideProcess = exec(`~/.trueautomation/bin/trueautomation ide`, { cwd: projectPath }, (error, stdout, stderr) => {
           if (error) {
             let err = (stdout + "\n" + stderr).match(/^.*error.*$/m);
             err = err ? err[0] : error;
+            notification.dismiss();
             atom.notifications.addError(err, { dismissable: true });
             return;
           }
@@ -62,6 +63,7 @@ export default {
         setTimeout(() => {
           if (!ideProcess.exitCode) {
             console.log("IDE process started");
+            notification.dismiss();
             atom.notifications.addSuccess("TrueAutomation IDE is started successfully!");
             this.toggle();
           }
