@@ -22,23 +22,20 @@ tell application "Google Chrome"
   repeat with t in tab_list
     if searchString is in (url of t as string) then
       set end of tab_MatchList to t
-      return
     end if
   end repeat
   if (count of tab_MatchList) is equal to 1 then
-    set w to item 1 of win_MatchList
-    set index of w to 1
     set i to 0
-    repeat with t in tabs of front window
+    repeat with t in tab_list
       set i to i + 1
-      if url of t contains searchString then
+      if searchString is in (url of t as string) then
           set active tab index of front window to i
           return
       end if
     end repeat
   else
     tell front window to make new tab
-    set URL of active tab of front window to "${TAExampleURL}"
+    set URL of active tab of front window to searchString
   end if
 end tell
 `
