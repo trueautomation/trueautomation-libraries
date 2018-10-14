@@ -12,7 +12,36 @@ import fetch from 'isomorphic-fetch';
 
 const TAExampleURL = 'https://trueautomation.io/';
 
-const MacChromeCmd = `do shell script "open -a 'Google Chrome' '${TAExampleURL}'"`
+const MacChromeCmd = `
+tell application "Google Chrome"
+  activate
+  set searchString to "${TAExampleURL}"
+  set tab_MatchList to {}
+  set win to front window
+  set tab_list to every tab of win
+  repeat with t in tab_list
+    if searchString is in (url of t as string) then
+      set end of tab_MatchList to t
+      return
+    end if
+  end repeat
+  if (count of tab_MatchList) is equal to 1 then
+    set w to item 1 of win_MatchList
+    set index of w to 1
+    set i to 0
+    repeat with t in tabs of front window
+      set i to i + 1
+      if url of t contains searchString then
+          set active tab index of front window to i
+          return
+      end if
+    end repeat
+  else
+    tell front window to make new tab
+    set URL of active tab of front window to "${TAExampleURL}"
+  end if
+end tell
+`
 
 export default {
   trueautomationAtomView: null,
