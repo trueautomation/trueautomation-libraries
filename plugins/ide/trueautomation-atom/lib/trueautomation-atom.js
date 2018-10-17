@@ -12,7 +12,8 @@ import fetch from 'isomorphic-fetch';
 const TAExampleURL = 'https://trueautomation.io/';
 
 let chromeWindowId;
-const MacChromeCmd = `
+const macChromeCmd = (windowId) => {
+  const macChromeCmdString = `
 tell application "Google Chrome"
   activate
   set searchString to "${TAExampleURL}"
@@ -21,22 +22,28 @@ tell application "Google Chrome"
   set tab_list to every tab of win
   set window_list to every window
   set atomWindow to "unknown"
+  set idPrecisionPow to 10 ^ 1
   repeat with w in window_list
-    if (id of w) is equal to "${chromeWindowId}" then
+    set roudedId to ((round (id of w) / idPrecisionPow rounding to nearest) * idPrecisionPow)
+
+    if (roudedId as integer) is equal to ("${windowId || 0}" as integer) then
       set atomWindow to w
     end if
   end repeat
   if atomWindow is equal to "unknown" then
     make new window
-    set winId to id of front window
+    set roudedId to ((round (id of front window) / idPrecisionPow rounding to nearest) * idPrecisionPow)
+    set winId to roudedId as integer
     set URL of active tab of front window to searchString
   else
-    set winId to "${chromeWindowId}"
+    set winId to "${windowId}"
     tell atomWindow to activate
   end if
   return winId
 end tell
 `
+  return macChromeCmdString;
+}
 
 export default {
   trueautomationAtomView: null,
@@ -54,17 +61,20 @@ export default {
   },
 
   runMacCmd() {
-    // let aaa = new File('aaa.txt');
+    let processOutput;
     new BufferedProcess({
       command: 'osascript',
-      args: ['-e', MacChromeCmd],
+      args: ['-e', macChromeCmd(chromeWindowId)],
       stderr: (data) => {
         console.log('Error: ' + data.toString())
       },
-      // stdout: aaa
+      stdout: (out) => {
+        processOutput = out
+      },
+      exit: (code) => {
+        chromeWindowId = processOutput;
+      }
     })
-    // console.log("!!!!! aaa")
-    // console.log(aaa.read())
   },
 
   runClientIde() {
