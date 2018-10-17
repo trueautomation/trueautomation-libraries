@@ -11,6 +11,7 @@ import fetch from 'isomorphic-fetch';
 
 const TAExampleURL = 'https://trueautomation.io/';
 
+let chromeWindowId;
 const MacChromeCmd = `
 tell application "Google Chrome"
   activate
@@ -18,24 +19,22 @@ tell application "Google Chrome"
   set tab_MatchList to {}
   set win to front window
   set tab_list to every tab of win
-  repeat with t in tab_list
-    if searchString is in (url of t as string) then
-      set end of tab_MatchList to t
+  set window_list to every window
+  set atomWindow to "unknown"
+  repeat with w in window_list
+    if (id of w) is equal to "${chromeWindowId}" then
+      set atomWindow to w
     end if
   end repeat
-  if (count of tab_MatchList) is equal to 1 then
-    set i to 0
-    repeat with t in tab_list
-      set i to i + 1
-      if searchString is in (url of t as string) then
-          set active tab index of front window to i
-          return
-      end if
-    end repeat
-  else
-    tell front window to make new tab
+  if atomWindow is equal to "unknown" then
+    make new window
+    set winId to id of front window
     set URL of active tab of front window to searchString
+  else
+    set winId to "${chromeWindowId}"
+    tell atomWindow to activate
   end if
+  return winId
 end tell
 `
 
@@ -55,13 +54,17 @@ export default {
   },
 
   runMacCmd() {
+    // let aaa = new File('aaa.txt');
     new BufferedProcess({
       command: 'osascript',
       args: ['-e', MacChromeCmd],
       stderr: (data) => {
         console.log('Error: ' + data.toString())
-      }
+      },
+      // stdout: aaa
     })
+    // console.log("!!!!! aaa")
+    // console.log(aaa.read())
   },
 
   runClientIde() {
