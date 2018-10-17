@@ -11,6 +11,7 @@ import fs from 'fs'
 import fetch from 'isomorphic-fetch';
 
 const TAExampleURL = 'https://trueautomation.io/';
+let chrome = null;
 
 const MacChromeCmd = `
 tell application "Google Chrome"
@@ -38,7 +39,13 @@ tell application "Google Chrome"
     set URL of active tab of front window to searchString
   end if
 end tell
-`
+`;
+
+const openChromeCmd = `
+tell application "Google Chrome"
+  activate
+end tell  
+`;
 
 export default {
   trueautomationAtomView: null,
@@ -59,6 +66,16 @@ export default {
     new BufferedProcess({
       command: 'osascript',
       args: ['-e', MacChromeCmd],
+      stderr: (data) => {
+        console.log('Error: ' + data.toString())
+      }
+    })
+  },
+
+  openMacCmd() {
+    new BufferedProcess({
+      command: 'osascript',
+      args: ['-e', openChromeCmd],
       stderr: (data) => {
         console.log('Error: ' + data.toString())
       }
@@ -229,7 +246,12 @@ export default {
         });
         this.modalPanel.show();
 
-        this.runMacCmd()
+        if (!chrome || chrome.exitCode) {
+          chrome = exec('/Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome');
+          this.runMacCmd();
+        } else {
+          this.openMacCmd();
+        }
       }
     });
 
