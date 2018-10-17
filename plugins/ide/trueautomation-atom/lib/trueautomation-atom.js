@@ -35,7 +35,6 @@ tell application "Google Chrome"
       end if
     end repeat
   else
-    tell front window to make new tab
     set URL of active tab of front window to searchString
   end if
 end tell
