@@ -22,17 +22,16 @@ tell application "Google Chrome"
   set tab_list to every tab of win
   set window_list to every window
   set atomWindow to "unknown"
-  set idPrecisionPow to 10 ^ 1
+  set idPrecisionPow to 10 ^ 2
   repeat with w in window_list
-    set roudedId to ((round (id of w) / idPrecisionPow rounding to nearest) * idPrecisionPow)
-
+    set roudedId to round of (id of w / idPrecisionPow) rounding down
     if (roudedId as integer) is equal to ("${windowId || 0}" as integer) then
       set atomWindow to w
     end if
   end repeat
   if atomWindow is equal to "unknown" then
     make new window
-    set roudedId to ((round (id of front window) / idPrecisionPow rounding to nearest) * idPrecisionPow)
+    set roudedId to round of (id of front window / idPrecisionPow) rounding down
     set winId to roudedId as integer
     set URL of active tab of front window to searchString
   else
