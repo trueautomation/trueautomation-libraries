@@ -32,7 +32,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         type: "basic",
         title: 'TA select',
         message: 'Element locator has been successfully saved.',
-        iconUrl: 'https://img-16.ccm2.net/gwn7Esw6Lm613F3Uy0lz-BpcXIk=/3a3cd4ae4c29482fbf38b927cf4f715c/ccm-faq/42390-kC8fqNdU27Oj9yOx-s-.png'
+        iconUrl: 'http://app-dev.trueautomation.io/favicon.png'
       }
       chrome.notifications.create(notidicationOptions);
     }
