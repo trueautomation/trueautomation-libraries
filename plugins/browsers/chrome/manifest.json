@@ -11,6 +11,8 @@
     "activeTab",
     "storage",
     "contextMenus",
+    "webRequest",
+    "webRequestBlocking",
     "http://*/*",
     "https://*/*"
   ],
