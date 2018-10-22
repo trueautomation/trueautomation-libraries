@@ -20,19 +20,18 @@ if (iframes.length > 0) {
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    const trueautomationLocalIdeServerUrl = 'http://localhost:9898';
+  const trueautomationLocalIdeServerUrl = 'http://localhost:9898';
 
-    fetch(`${trueautomationLocalIdeServerUrl}/browser/currentElement`).then(response => response.json()).then((json) => {
-      const elementName = json.name;
+  fetch(`${trueautomationLocalIdeServerUrl}/browser/currentElement`).then(response => response.json()).then((json) => {
+    const elementName = json.name;
 
-      if (!elementName) {
-        alert('There is no TA locator to select. Use your IDE to select TA locator');
-        return;
-      }
-      selectElementHandler(currentDocument, clickedElement);
-    })
-  }
-);
+    if (!elementName) {
+      alert('There is no TA locator to select. Use your IDE to select TA locator');
+      return;
+    }
+    selectElementHandler(currentDocument, clickedElement);
+  });
+});
 
 const selectElementHandler = (currentDocument, currentElement) => {
   const trueautomationLocalIdeServerUrl = 'http://localhost:9898';
@@ -50,7 +49,7 @@ const selectElementHandler = (currentDocument, currentElement) => {
       html: htmlJson,
     }),
   }).then((response) => {
-    chrome.runtime.sendMessage({ messageType: "taSelect" });
+    console.log(response);
   }).catch((err) => {
     console.log('Error occurred', err);
   });
