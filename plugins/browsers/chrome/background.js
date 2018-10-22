@@ -12,6 +12,14 @@ chrome.webRequest.onHeadersReceived.addListener(
     urls: ["<all_urls>"]
   }, ["blocking", "responseHeaders"]);
 
+chrome.webRequest.onCompleted.addListener((details) => {
+  chrome.tabs.executeScript({
+    file: 'notification.js'
+  });
+}, {
+  urls: ["http://localhost:9898/browser/selectElement"]
+});
+
 chrome.browserAction.onClicked.addListener(function(tab) {
   chrome.tabs.executeScript({
     file: 'extension.js'
@@ -24,16 +32,4 @@ chrome.contextMenus.create({
   onclick(info, tab) {
     chrome.tabs.sendMessage(tab.id, {});
   }
-})
-
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.messageType == "taSelect") {
-      const notidicationOptions = {
-        type: "basic",
-        title: 'TA select',
-        message: 'Element locator has been successfully saved.',
-        iconUrl: 'http://app-dev.trueautomation.io/favicon.png'
-      }
-      chrome.notifications.create(notidicationOptions);
-    }
 });
