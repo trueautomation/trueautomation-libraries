@@ -18,7 +18,8 @@
     "https://*/*"
   ],
   "icons": {
-    "16": "icon-small.png"
+    "16": "icon-small.png",
+    "128": "icon.png"
   },
   "background": {
     "scripts": ["background.js"],
