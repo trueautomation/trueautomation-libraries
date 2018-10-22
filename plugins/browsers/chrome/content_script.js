@@ -50,7 +50,7 @@ const selectElementHandler = (currentDocument, currentElement) => {
       html: htmlJson,
     }),
   }).then((response) => {
-    alert('Element locator has been successfully saved.');
+    chrome.runtime.sendMessage({ messageType: "taSelect" });
   }).catch((err) => {
     console.log('Error occurred', err);
   });

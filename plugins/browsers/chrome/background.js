@@ -25,3 +25,15 @@ chrome.contextMenus.create({
     chrome.tabs.sendMessage(tab.id, {});
   }
 })
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.messageType == "taSelect") {
+      const notidicationOptions = {
+        type: "basic",
+        title: 'TA select',
+        message: 'Element locator has been successfully saved.',
+        iconUrl: 'http://app-dev.trueautomation.io/favicon.png'
+      }
+      chrome.notifications.create(notidicationOptions);
+    }
+});
