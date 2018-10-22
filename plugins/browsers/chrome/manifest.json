@@ -17,6 +17,9 @@
     "http://*/*",
     "https://*/*"
   ],
+  "icons": {
+    "16": "icon-small.png"
+  },
   "background": {
     "scripts": ["background.js"],
     "persistent": true

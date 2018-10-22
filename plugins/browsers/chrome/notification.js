@@ -17,7 +17,8 @@ function executeExtension() {
   div.style.top = "10px";
   div.style.right = "10px";
   div.style.padding = "24px 36px";
-  div.style.borderBottomLeftRadius = "10px";
+  div.style.borderRadius = "10px";
+  div.style.border = "1px solid #ee6c4d";
   div.style.backgroundColor = "#fff";
   div.style.zIndex = maxZIndex + 101;
   div.style.fontSize = "16px";
