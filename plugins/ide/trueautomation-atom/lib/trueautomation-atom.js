@@ -1,7 +1,6 @@
 'use babel';
 
 import trueautomationAtomProvider from './trueautomation-atom-provider';
-import TrueautomationAtomView from './trueautomation-atom-view';
 import { TextEditor, CompositeDisposable, Range, Point, File, BufferedProcess } from 'atom';
 import { exec } from 'child_process';
 import killPort from 'kill-port'
@@ -40,13 +39,11 @@ tell application "Google Chrome"
   end if
   return winId
 end tell
-`
+`;
   return macChromeCmdString;
-}
+};
 
 export default {
-  trueautomationAtomView: null,
-  modalPanel: null,
   subscriptions: null,
   markers: [],
 
@@ -122,12 +119,6 @@ export default {
   },
 
   activate(state) {
-    this.trueautomationAtomView = new TrueautomationAtomView(state.trueautomationAtomViewState);
-    this.modalPanel = atom.workspace.addModalPanel({
-      item: this.trueautomationAtomView.getElement(),
-      visible: false
-    });
-
     this.runClientIde();
 
     // Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
@@ -152,17 +143,12 @@ export default {
   },
 
   deactivate() {
-    this.modalPanel.destroy();
     this.subscriptions.dispose();
-    this.trueautomationAtomView.destroy();
     const editors = atom.workspace.getTextEditors();
     editors.forEach(editor => this.cleanTaSpaces(editor));
   },
 
   serialize() {
-    return {
-      trueautomationAtomViewState: this.trueautomationAtomView.serialize()
-    };
   },
 
   toggle() {
@@ -227,21 +213,7 @@ export default {
         body: JSON.stringify({ name: taName }),
       });
 
-      if (response.status === 200) {
-        this.trueautomationAtomView.setText(`Choose element for '${taName}' locator in your Chrome browser`);
-        this.trueautomationAtomView.setDoneCallback(() => {
-          this.modalPanel.hide();
-          if (markers && markers.length > 0) {
-            for (let i = 0; i < markers.length; i++) {
-              markers[i].destroy();
-            }
-          }
-          this.scanForTa(editor);
-        });
-        this.modalPanel.show();
-
-        this.runMacCmd();
-      }
+      if (response.status === 200) this.runMacCmd();
     });
 
     return taButtonElement;
