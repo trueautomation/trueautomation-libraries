@@ -20,7 +20,7 @@ function executeExtension() {
   div.style.borderRadius = "10px";
   div.style.border = "1px solid #ee6c4d";
   div.style.backgroundColor = "#fff";
-  div.style.zIndex = maxZIndex*10 + 1;
+  div.style.zIndex = maxZIndex*1000 + 1;
   div.style.fontSize = "16px";
   div.style.letterSpacing = "0.3px";
   div.style.fontFamily = "Montserrat-SemiBold, sans-serif";
