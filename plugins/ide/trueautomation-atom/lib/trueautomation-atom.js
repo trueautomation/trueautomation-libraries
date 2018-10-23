@@ -8,7 +8,7 @@ import fs from 'fs'
 
 import fetch from 'isomorphic-fetch';
 
-const TAExampleURL = 'https://trueautomation.io/';
+const TAExampleURL = 'https://trueautomation.io/howtouse/';
 
 let chromeWindowId;
 const macChromeCmd = (windowId) => {
