@@ -3,8 +3,9 @@
 import trueautomationAtomProvider from './trueautomation-atom-provider';
 import { TextEditor, CompositeDisposable, Range, Point, File, BufferedProcess } from 'atom';
 import { exec } from 'child_process';
-import killPort from 'kill-port'
-import fs from 'fs'
+import killPort from 'kill-port';
+import fs from 'fs';
+import io from 'socket.io-client';
 
 import fetch from 'isomorphic-fetch';
 
@@ -213,7 +214,14 @@ export default {
         body: JSON.stringify({ name: taName }),
       });
 
-      if (response.status === 200) this.runMacCmd();
+      if (response.status === 200) {
+        const ideServerUrl = 'http://localhost:9898';
+        const socket = io(ideServerUrl);
+        socket.on('taElementSelected', () => {
+          this.scanForTa(editor);
+        });
+        this.runMacCmd();
+      }
     });
 
     return taButtonElement;
