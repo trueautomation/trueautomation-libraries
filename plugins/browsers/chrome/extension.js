@@ -1,20 +1,33 @@
 function executeExtension() {
+  let taScript;
   const trueautomationLocalIdeServerUrl = 'http://localhost:3000';
   const trueautomationDevIdeServerUrl = 'http://app-dev.trueautomation.io';
-  const trueautomationProdIdeServerUrl = 'https://trueautomation.io/';
+  const trueautomationProdIdeServerUrl = 'https://trueautomation.io';
 
-  const taScript = document.createElement("script");
-  taScript.src = `${trueautomationLocalIdeServerUrl}/ide/index.js`;
+  chrome.storage.local.get('taScript', function(result) {
+    taScript = result['taScript'];
 
-  const taLayovers = document.getElementsByClassName('ta-layover');
-
-  if (taLayovers.length > 0 ) {
-    taScript.remove();
-    taLayovers[0].parentElement.removeChild(taLayovers[0]);
-    window.location.reload(true);
-  } else {
-    document.head.appendChild(taScript);
-  }
+    if (!taScript) {
+      fetch(`${trueautomationDevIdeServerUrl}/ide/index.js`).then(function (response) {
+        return response.text();
+      }).then(function(respBody) {
+        taScript = respBody;
+        chrome.storage.local.set({ 'taScript': taScript });
+        eval(taScript);
+      }).catch(function (err) {
+        console.log('Error occurred:', err);
+      });
+    } else {
+      const taLayovers = document.getElementsByClassName('ta-layover');
+      if (taLayovers.length === 0) {
+        eval(taScript);
+      } else {
+        window.enableAllUserEvents();
+        taLayovers[0].parentElement.removeChild(taLayovers[0]);
+        chrome.storage.local.remove('taScript');
+      }
+    }
+  });
 }
 
 executeExtension();

@@ -6,24 +6,6 @@ chrome.webRequest.onHeadersReceived.addListener(
       }
     }
 
-    const acao = details.responseHeaders.findIndex((element, index, array) => {
-      return element.name.toLowerCase() === 'access-control-allow-origin'
-    });
-
-    const acah = details.responseHeaders.findIndex((element, index, array) => {
-      return element.name.toLowerCase() === 'access-control-allow-headers'
-    });
-
-    if ( acao === -1) {
-      details.responseHeaders.push({ name: 'access-control-allow-origin', value: '*'});
-    }
-
-    if (acah === -1) {
-      details.responseHeaders.push({ name: 'access-control-allow-headers', value: 'Content-Type, Accept, X-Requested-With, remember-me'});
-    } else {
-      details.responseHeaders[acao].value = 'Content-Type, Accept, X-Requested-With, remember-me'
-    }
-
     return {
       responseHeaders: details.responseHeaders
     };
