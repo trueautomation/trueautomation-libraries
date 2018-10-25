@@ -2,13 +2,13 @@ function executeExtension() {
   let taScript;
   const trueautomationLocalIdeServerUrl = 'http://localhost:3000';
   const trueautomationDevIdeServerUrl = 'http://app-dev.trueautomation.io';
-  const trueautomationProdIdeServerUrl = 'https://trueautomation.io/';
+  const trueautomationProdIdeServerUrl = 'https://trueautomation.io';
 
   chrome.storage.local.get('taScript', function(result) {
     taScript = result['taScript'];
 
     if (!taScript) {
-      fetch(`${trueautomationDevIdeServerUrl}/client/ide/getPlugin`).then(function (response) {
+      fetch(`${trueautomationDevIdeServerUrl}/ide/index.js`).then(function (response) {
         return response.text();
       }).then(function(respBody) {
         taScript = respBody;
@@ -24,6 +24,7 @@ function executeExtension() {
       } else {
         window.enableAllUserEvents();
         taLayovers[0].parentElement.removeChild(taLayovers[0]);
+        chrome.storage.local.remove('taScript');
       }
     }
   });

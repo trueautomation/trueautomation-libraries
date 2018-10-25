@@ -5,6 +5,7 @@ chrome.webRequest.onHeadersReceived.addListener(
         details.responseHeaders.splice(i, 1);
       }
     }
+
     return {
       responseHeaders: details.responseHeaders
     };

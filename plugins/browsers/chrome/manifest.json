@@ -1,9 +1,10 @@
 {
   "manifest_version": 2,
 
-  "name": "TrueAutomation.IO",
+  "name": "TrueAutomation.IO Element Picker",
+  "short_name": "TA Element Picker",
   "description": "Write your tests faster and make them more reliable with TrueAutomation.IO smart locators.",
-  "version": "0.3.2",
+  "version": "1.0.0",
   "browser_action": {
     "default_icon": "icon.png"
   },
@@ -14,8 +15,7 @@
     "contextMenus",
     "webRequest",
     "webRequestBlocking",
-    "http://*/*",
-    "https://*/*"
+    "<all_urls>"
   ],
   "icons": {
     "16": "icon-small.png",
@@ -26,9 +26,7 @@
     "persistent": true
   },
   "content_scripts": [{
-    "matches": ["*://*/*"],
-    "js": [
-      "content_script.js"
-    ]
+    "matches": ["<all_urls>"],
+    "js": ["content_script.js"]
   }]
 }
