@@ -89,9 +89,10 @@ export default {
         const ideProcess = exec(`~/.trueautomation/bin/trueautomation ide`, { cwd: projectPath }, (error, stdout, stderr) => {
           if (error) {
             let err = (stdout + "\n" + stderr).match(/^.*error.*$/m);
-            err = err ? err[0] : error;
+            err = err ? err[0] : error.message;
             notification.dismiss();
-            atom.notifications.addError(err, { dismissable: true });
+            if (error.signal !== 'SIGKILL')
+              atom.notifications.addError(err, { dismissable: true });
             return;
           }
         });
