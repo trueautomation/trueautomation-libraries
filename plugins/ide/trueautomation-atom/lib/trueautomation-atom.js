@@ -9,7 +9,7 @@ import io from 'socket.io-client';
 
 import fetch from 'isomorphic-fetch';
 
-const TAExampleURL = 'https://trueautomation.io/howtouse/';
+const TAExampleURL = 'https://app.trueautomation.io/howtouse/';
 
 let chromeWindowId;
 const macChromeCmd = (windowId) => {
@@ -128,7 +128,6 @@ export default {
 
   activate(state) {
     this.runClientIde();
-    if (!this.ide) return;
 
     // Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     this.subscriptions = new CompositeDisposable();
@@ -146,6 +145,7 @@ export default {
       const taConfig = new File(`${path}/trueautomation.json`);
 
       if (taConfig.existsSync()) {
+        if (!this.ide) return;
         this.toggle();
       }
     });
