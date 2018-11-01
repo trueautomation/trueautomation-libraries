@@ -47,6 +47,7 @@ end tell
 export default {
   subscriptions: null,
   markers: [],
+  ide: null,
 
   getProvider() {
     console.log('Get provider');
@@ -93,11 +94,13 @@ export default {
             notification.dismiss();
             if (error.signal !== 'SIGKILL')
               atom.notifications.addError(err, { dismissable: true });
+            this.deactivate();
             return;
           }
         });
         setTimeout(() => {
           if (!ideProcess.exitCode) {
+            this.ide = ideProcess;
             console.log("IDE process started");
             notification.dismiss();
             atom.notifications.addSuccess("TrueAutomation Element picker is started successfully!");
@@ -107,6 +110,7 @@ export default {
       }).catch((err) => {
         console.log("ERROR: " + err);
         atom.notifications.addError("ERROR: " + err);
+        this.deactivate();
         return;
       });
     }
@@ -115,13 +119,16 @@ export default {
   cleanTaSpaces(editor) {
     editor.scan(/[\s|\(|\=](ta|byTa|@FindByTA)\s*\((\s+|\s*taName\s*\=\s+)[\'\"]((\w|:)+)[\'\"]\s*\)/g, {}, async (result) => {
       const text = result.match[0].replace(/(\(|\(\s*taName\s*\=)\s+/, '$1');
-      editor.setTextInBufferRange(result.range, text, { undo: 'skip' });
+      editor.setTextInBufferRange(result.range, text);
+      const buffer = editor.getBuffer();
+      buffer.groupLastChanges();
     });
     editor.save();
   },
 
   activate(state) {
     this.runClientIde();
+    if (!this.ide) return;
 
     // Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     this.subscriptions = new CompositeDisposable();
@@ -145,7 +152,7 @@ export default {
   },
 
   deactivate() {
-    this.subscriptions.dispose();
+    if (this.subscriptions) this.subscriptions.dispose();
     const editors = atom.workspace.getTextEditors();
     editors.forEach(editor => this.cleanTaSpaces(editor));
   },
