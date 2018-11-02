@@ -110,7 +110,6 @@ export default {
       }).catch((err) => {
         console.log("ERROR: " + err);
         atom.notifications.addError("ERROR: " + err);
-        this.deactivate();
         return;
       });
     }
