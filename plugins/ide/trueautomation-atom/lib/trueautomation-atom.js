@@ -27,6 +27,10 @@ tell application "Google Chrome"
     set roudedId to round of (id of w / idPrecisionPow) rounding down
     if (roudedId as integer) is equal to ("${windowId || 0}" as integer) then
       set atomWindow to w
+      set index of w to 1
+      tell application "System Events" to tell process "Google Chrome"
+				perform action "AXRaise" of window 1
+			end tell
     end if
   end repeat
   if atomWindow is equal to "unknown" then
