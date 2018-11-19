@@ -28,6 +28,8 @@ tell application "Google Chrome"
     if (roudedId as integer) is equal to ("${windowId || 0}" as integer) then
       set atomWindow to w
       set index of w to 1
+      return "${windowId}"
+      exit repeat
     end if
   end repeat
   if atomWindow is equal to "unknown" then
@@ -35,11 +37,8 @@ tell application "Google Chrome"
     set roudedId to round of (id of front window / idPrecisionPow) rounding down
     set winId to roudedId as integer
     set URL of active tab of front window to searchString
-  else
-    set winId to "${windowId}"
-    tell atomWindow to activate
+    return winId
   end if
-  return winId
 end tell
 `;
   return macChromeCmdString;
@@ -88,7 +87,7 @@ export default {
       killPort(idePort).then(() => {
         console.log("Staring ide process...");
         const notification = atom.notifications.addInfo("Starting TrueAutomation Element picker ...", { dismissable: true });
-        const ideProcess = exec(`~/.trueautomation/bin/trueautomation ide`, { cwd: projectPath }, (error, stdout, stderr) => {
+        const ideProcess = exec(`~/.trueautomation/bin/trueautomation ide`, { cwd: projectPath, maxBuffer: 1024 * 500 }, (error, stdout, stderr) => {
           if (error) {
             let err = (stdout + "\n" + stderr).match(/^.*error.*$/m);
             err = err ? err[0].replace(/^.*?]\s*/,'') : error.message;
