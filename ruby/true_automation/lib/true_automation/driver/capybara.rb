@@ -48,28 +48,6 @@ module TrueAutomation
         end
         @browser
       end
-
-      def find_css(selector)
-        res = super
-        check_selector(selector) if !res || res.empty?
-        res
-      end
-
-      def find_xpath(selector)
-        res = super
-        check_selector(selector) if !res || res.empty?
-        res
-      end
-
-      private
-
-      def check_selector(selector)
-        if ta_selector_match = selector.match(/__taonly__(.+)__taonly__/)
-          error_text = "Element '#{ta_selector_match[1]}' was not found in database. " +
-                       'Please provide a selector to find and initialize element.'
-          raise TrueAutomation::RecordNotFound, error_text
-        end
-      end
     end
   end
 end
