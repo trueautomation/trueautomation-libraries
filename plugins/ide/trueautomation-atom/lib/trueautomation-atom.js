@@ -27,8 +27,6 @@ tell application "Google Chrome"
     set roudedId to round of (id of w / idPrecisionPow) rounding down
     if (roudedId as integer) is equal to ("${windowId || 0}" as integer) then
       set atomWindow to w
-      set index of w to 1
-      return "${windowId}"
       exit repeat
     end if
   end repeat
@@ -37,8 +35,11 @@ tell application "Google Chrome"
     set roudedId to round of (id of front window / idPrecisionPow) rounding down
     set winId to roudedId as integer
     set URL of active tab of front window to searchString
-    return winId
+  else
+    set winId to "${windowId}"
+    tell atomWindow to activate
   end if
+  return winId
 end tell
 `;
   return macChromeCmdString;
