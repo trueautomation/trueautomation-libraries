@@ -1,25 +1,26 @@
 require_relative '../client'
+module Capybara
+  module Queries
+    class SelectorQuery
+      alias_method :original_description, :description
+      def description(only_applied = false)
+        desc = original_description
+        matched_result = desc.match(/.*__taonly__(.+)__taonly__.*/)
+        if selector = matched_result && matched_result[1]
+          desc = "Element '#{selector}' was not found in database. " +
+                 'Please provide a selector to find and initialize element.'
+        end
+        desc
+      end
+    end
+  end
+end
 
 module TrueAutomation
   class RecordNotFound < StandardError; end
 
   module Driver
     class Capybara < Capybara::Selenium::Driver
-      module Capybara
-        module Queries
-          class SelectorQuery
-            def description(only_applied = false)
-              desc = super
-              if selector = desc.match(/.*__ta_only__(.+)__ta_only__.*/).try(:[], 1)
-                desc = "Element '#{selector}' was not found in database. " +
-                       'Please provide a selector to find and initialize element.'
-              end
-              desc
-            end
-          end
-        end
-      end
-
       def initialize(app, **options)
         @port = options.delete(:port) || 9515
         @driver = options.delete(:driver)
