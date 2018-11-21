@@ -88,7 +88,7 @@ export default {
       killPort(idePort).then(() => {
         console.log("Staring ide process...");
         const notification = atom.notifications.addInfo("Starting TrueAutomation Element picker ...", { dismissable: true });
-        const ideProcess = exec(`~/.trueautomation/bin/trueautomation ide`, { cwd: projectPath, maxBuffer: 1024 * 500 }, (error, stdout, stderr) => {
+        const ideProcess = exec(`~/.trueautomation/bin/trueautomation ide`, { cwd: projectPath, maxBuffer: Infinity }, (error, stdout, stderr) => {
           if (error) {
             let err = (stdout + "\n" + stderr).match(/^.*error.*$/m);
             err = err ? err[0].replace(/^.*?]\s*/,'') : error.message;
