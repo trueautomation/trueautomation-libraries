@@ -5,6 +5,21 @@ module TrueAutomation
 
   module Driver
     class Capybara < Capybara::Selenium::Driver
+      module Capybara
+        module Queries
+          class SelectorQuery
+            def description(only_applied = false)
+              desc = super
+              if selector = desc.match(/.*__ta_only__(.+)__ta_only__.*/).try(:[], 1)
+                desc = "Element '#{selector}' was not found in database. " +
+                       'Please provide a selector to find and initialize element.'
+              end
+              desc
+            end
+          end
+        end
+      end
+
       def initialize(app, **options)
         @port = options.delete(:port) || 9515
         @driver = options.delete(:driver)
@@ -18,8 +33,7 @@ module TrueAutomation
         options ||= {}
         ta_url = options[:ta_url] || "http://localhost:#{@port}/"
 
-        capabilities = options[:desired_capabilities]
-        capabilities ||= {}
+        capabilities = options[:desired_capabilities] || {}
 
         if options and options[:browser] == :remote
           raise 'Remote driver URL is not specified' unless options[:url]
@@ -36,7 +50,10 @@ module TrueAutomation
 
       def browser
         unless @browser
-          @ta_client.start(port: @port, remote: @remote, driver: @driver, driver_version: @driver_version)
+          @ta_client.start(port: @port,
+                           remote: @remote,
+                           driver: @driver,
+                           driver_version: @driver_version)
 
           @ta_client.wait_until_start
 
