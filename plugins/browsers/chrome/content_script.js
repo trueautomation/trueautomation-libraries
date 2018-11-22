@@ -34,7 +34,55 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 const selectElementHandler = (currentDocument, currentElement) => {
+  getCanvas(currentDocument, currentElement).then((canvas) => {
+    sendElement(currentDocument, currentElement, canvas.toDataURL());
+  });
+};
+
+const getElementAttributes = (el) => {
+  let xPos = 0;
+  let yPos = 0;
+  const currentElement = el;
+
+  while (el) {
+    if (el.tagName == 'BODY') {
+      // deal with browser quirks with body/window/document and page scroll
+      const xScroll = el.scrollLeft || document.documentElement.scrollLeft;
+      const yScroll = el.scrollTop || document.documentElement.scrollTop;
+
+      xPos += (el.offsetLeft - xScroll + el.clientLeft);
+      yPos += (el.offsetTop - yScroll + el.clientTop);
+    } else {
+      // for all other non-BODY elements
+      xPos += (el.offsetLeft - el.scrollLeft + el.clientLeft);
+      yPos += (el.offsetTop - el.scrollTop + el.clientTop);
+    }
+
+    el = el.offsetParent;
+  }
+  return {
+    x: xPos + window.pageXOffset - 20,
+    y: yPos + window.pageYOffset - 20,
+    width: currentElement.offsetWidth + 40,
+    height: currentElement.offsetHeight + 40,
+  };
+};
+
+const getCanvas = (doc, currentElement) => {
+  const attrs = getElementAttributes(currentElement);
+  return html2canvas(doc.body, {
+    x: attrs.x,
+    y: attrs.y,
+    width: attrs.width,
+    height: attrs.height,
+    useCORS: true,
+    logging: false,
+  });
+};
+
+const sendElement = (currentDocument, currentElement, screenURL) => {
   const trueautomationLocalIdeServerUrl = 'http://localhost:9898';
+  const screenshot = screenURL;
   const address = findElementAddress(currentElement);
   const htmlJson = JSON.stringify(findNodeCss(currentDocument.documentElement));
 
@@ -45,6 +93,7 @@ const selectElementHandler = (currentDocument, currentElement) => {
       Accept: 'application/json',
     },
     body: JSON.stringify({
+      screenshot,
       address,
       html: htmlJson,
     }),
