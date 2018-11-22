@@ -7,8 +7,7 @@ module Capybara
         desc = original_description
         matched_result = desc.match(/.*__taonly__(.+)__taonly__.*/)
         if selector = matched_result && matched_result[1]
-          desc = "Element '#{selector}' was not found in database. " +
-                 'Please provide a selector to find and initialize element.'
+          desc = "TrueAutomation element #{selector} on the page"
         end
         desc
       end
