@@ -226,7 +226,7 @@ export default {
         const ideServerUrl = 'http://localhost:9898';
         const socket = io(ideServerUrl);
         socket.on('taElementSelected', () => {
-          this.scanForTa(editor);
+          this.scanForTaElement(editor, taName);
         });
         this.runMacCmd();
       }
@@ -404,6 +404,28 @@ export default {
     } else {
       editor.scanInBufferRange(/[\s|\(|\=](ta|byTa|@FindByTA)\s*\((\s*|\s*taName\s*\=\s*)[\'\"]((\w|:)+)[\'\"]\s*\)/g, range, result => callback(result));
     }
+  },
+  scanForTaElement(editor, selector) {
+    const callback = async (result) => {
+      if (this.updateEditorText({ result, editor })) return null;
 
+      const taName = result.match[3];
+      const elementsJson = await fetch('http://localhost:9898/ide/findElementsByNames', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ names: [taName] }),
+      });
+
+      const elements = await elementsJson.json();
+      const foundClass = elements.elements.length > 0 ? 'ta-found' : 'ta-not-found';
+
+      this.createTaMarkers(result, foundClass, editor);
+    };
+
+    const regex = new RegExp("[\\s|\\(|\\=](ta|byTa|@FindByTA)\\s*\\((\\s*|\\s*taName\\s*\\=\\s*)[\\'\\\"](" + selector + ")[\\'\\\"]\\s*\\)", "g");
+    editor.scan(regex, {}, result => callback(result));
   }
 };
