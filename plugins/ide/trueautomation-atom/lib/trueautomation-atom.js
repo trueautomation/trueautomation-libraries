@@ -174,11 +174,11 @@ export default {
     });
 
     atom.workspace.observeTextEditors(editor => {
-      editor.onDidStopChanging(() => {
+      editor.onDidStopChanging(({ changes }) => {
         const lastEditedPoint = editor.getCursorBufferPosition();
-        this.cleanUpLine(editor);
+        this.cleanUpLine(editor, changes.newRange);
         this.cleanUpMarkersForRow(lastEditedPoint.row, editor);
-        this.scanForTa(editor);
+        this.scanForTa(editor, changes.newRange);
       });
 
       editor.element.onDidChangeScrollLeft(() => {
@@ -235,15 +235,21 @@ export default {
     return taButtonElement;
   },
 
-  cleanUpLine(editor) {
-    editor.scan(/[\s|\(|\=](ta|byTa|@FindByTA)\s*\((\s+|\s*taName\s*\=\s+)[\'\"][\'\"]\s*\)/g, {}, async (result) => {
+  cleanUpLine(editor, range=null) {
+    const clean = (result) => {
       const text = result.match[0].replace(/\s+(\'|\")/, '$1');
       editor.setTextInBufferRange(result.range, text, { undo: 'skip' });
       const cursorPosition = editor.getCursorBufferPosition();
       const overlayLength = 2;
       const newCursosrPosition = new Point(cursorPosition.row, cursorPosition.column - overlayLength);
       editor.setCursorBufferPosition(newCursosrPosition);
-    });
+    };
+
+    if (!range) {
+      editor.scan(/[\s|\(|\=](ta|byTa|@FindByTA)\s*\((\s+|\s*taName\s*\=\s+)[\'\"][\'\"]\s*\)/g, {}, result => clean(result));
+    } else {
+      editor.scanInBufferRange(/[\s|\(|\=](ta|byTa|@FindByTA)\s*\((\s+|\s*taName\s*\=\s+)[\'\"][\'\"]\s*\)/g, range, result => clean(result));
+    }
   },
 
   cleanUpMarkersForRow(editedRow, editor) {
@@ -373,8 +379,8 @@ export default {
     this.createNameMarker(taOptions);
   },
 
-  scanForTa(editor) {
-    editor.scan(/[\s|\(|\=](ta|byTa|@FindByTA)\s*\((\s*|\s*taName\s*\=\s*)[\'\"]((\w|:)+)[\'\"]\s*\)/g, {}, async (result) => {
+  scanForTa(editor, range=null) {
+    const callback = async (result) => {
       if (this.updateEditorText({ result, editor })) return null;
 
       const taName = result.match[3];
@@ -391,6 +397,13 @@ export default {
       const foundClass = elements.elements.length > 0 ? 'ta-found' : 'ta-not-found';
 
       this.createTaMarkers(result, foundClass, editor);
-    });
+    };
+
+    if (!range) {
+      editor.scan(/[\s|\(|\=](ta|byTa|@FindByTA)\s*\((\s*|\s*taName\s*\=\s*)[\'\"]((\w|:)+)[\'\"]\s*\)/g, {}, result => callback(result));
+    } else {
+      editor.scanInBufferRange(/[\s|\(|\=](ta|byTa|@FindByTA)\s*\((\s*|\s*taName\s*\=\s*)[\'\"]((\w|:)+)[\'\"]\s*\)/g, range, result => callback(result));
+    }
+
   }
 };
