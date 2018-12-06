@@ -90,7 +90,7 @@ export default {
         const notification = atom.notifications.addInfo("Starting TrueAutomation Element picker ...", { dismissable: true });
         const ideProcess = exec(`~/.trueautomation/bin/trueautomation ide`, { cwd: projectPath, maxBuffer: Infinity }, (error, stdout, stderr) => {
           if (error) {
-            let err = (stdout + "\n" + stderr).match(/^.*error.*$/m);
+            let err = stderr.match(/^.*error.*$/m);
             err = err ? err[0].replace(/^.*?]\s*/,'') : error.message;
             notification.dismiss();
             if (error.signal !== 'SIGKILL')
