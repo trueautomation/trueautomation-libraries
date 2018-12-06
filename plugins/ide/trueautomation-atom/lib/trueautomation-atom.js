@@ -59,6 +59,39 @@ export default {
     return this.p;
   },
 
+  runIdeCmd(ideCommand, projectPath) {
+    console.log("Kill ide process if exist");
+    const idePort = 9898;
+    killPort(idePort).then(() => {
+      console.log("Staring ide process...");
+      const notification = atom.notifications.addInfo("Starting TrueAutomation Element picker ...", { dismissable: true });
+      const ideProcess = exec(ideCommand, { cwd: projectPath, maxBuffer: Infinity }, (error, stdout, stderr) => {
+        if (error) {
+          let err = stderr.match(/^.*error.*$/m);
+          err = err ? err[0].replace(/^.*?]\s*/,'') : error.message;
+          notification.dismiss();
+          if (error.signal !== 'SIGKILL')
+            atom.notifications.addError(err, { dismissable: true });
+          this.deactivate();
+          return;
+        }
+      });
+      setTimeout(() => {
+        if (!ideProcess.exitCode) {
+          this.ide = ideProcess;
+          console.log("IDE process started");
+          notification.dismiss();
+          atom.notifications.addSuccess("TrueAutomation Element picker is started successfully!");
+          this.toggle();
+        }
+      }, 10000)
+    }).catch((err) => {
+      console.log("ERROR: " + err);
+      atom.notifications.addError("ERROR: " + err);
+      return;
+    });
+  },
+
   runMacCmd() {
     let processOutput;
     new BufferedProcess({
@@ -78,41 +111,15 @@ export default {
 
   runClientIde() {
     const projectPath = atom.project.rootDirectories[0] && atom.project.rootDirectories[0].path;
-
     console.log("Project path: " + projectPath);
     const isWin = process.platform === "win32";
     const isTaInitialized = fs.existsSync(`${projectPath}/trueautomation.json`);
-    const idePort = 9898;
-    if (!isWin && projectPath && isTaInitialized) {
-      console.log("Kill ide process if exist");
-      killPort(idePort).then(() => {
-        console.log("Staring ide process...");
-        const notification = atom.notifications.addInfo("Starting TrueAutomation Element picker ...", { dismissable: true });
-        const ideProcess = exec(`~/.trueautomation/bin/trueautomation ide`, { cwd: projectPath, maxBuffer: Infinity }, (error, stdout, stderr) => {
-          if (error) {
-            let err = stderr.match(/^.*error.*$/m);
-            err = err ? err[0].replace(/^.*?]\s*/,'') : error.message;
-            notification.dismiss();
-            if (error.signal !== 'SIGKILL')
-              atom.notifications.addError(err, { dismissable: true });
-            this.deactivate();
-            return;
-          }
-        });
-        setTimeout(() => {
-          if (!ideProcess.exitCode) {
-            this.ide = ideProcess;
-            console.log("IDE process started");
-            notification.dismiss();
-            atom.notifications.addSuccess("TrueAutomation Element picker is started successfully!");
-            this.toggle();
-          }
-        }, 10000)
-      }).catch((err) => {
-        console.log("ERROR: " + err);
-        atom.notifications.addError("ERROR: " + err);
-        return;
-      });
+    if (projectPath && isTaInitialized) {
+      if (!isWin) {
+        this.runIdeCmd('~/.trueautomation/bin/trueautomation ide', projectPath)
+      } else {
+        this.runIdeCmd('trueautomation ide', projectPath)
+      }
     }
   },
 
