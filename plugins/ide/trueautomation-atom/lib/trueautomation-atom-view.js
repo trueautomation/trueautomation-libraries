@@ -19,14 +19,6 @@ export default class TrueautomationAtomView {
       this.doneCallback();
     });
     this.element.appendChild(this.message);
-
-    this.doneButton = document.createElement('a');
-    this.doneButton.textContent = 'Done';
-    this.doneButton.classList.add('ta-primary-btn');
-    this.element.appendChild(this.doneButton);
-    this.doneButton.addEventListener('click', (event) => {
-      this.doneCallback();
-    });
   }
 
   setDoneCallback(callback) {
