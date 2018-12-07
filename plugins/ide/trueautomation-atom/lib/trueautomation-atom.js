@@ -3,7 +3,7 @@
 import trueautomationAtomProvider from './trueautomation-atom-provider';
 import { TextEditor, CompositeDisposable, Range, Point, File, BufferedProcess } from 'atom';
 import { exec } from 'child_process';
-import killPort from 'kill-port';
+import { kill, killer } from 'cross-port-killer';
 import fs from 'fs';
 import io from 'socket.io-client';
 
@@ -62,7 +62,7 @@ export default {
   runIdeCmd(ideCommand, projectPath) {
     console.log("Kill ide process if exist");
     const idePort = 9898;
-    killPort(idePort).then(() => {
+    kill(idePort).then(() => {
       console.log("Staring ide process...");
       const notification = atom.notifications.addInfo("Starting TrueAutomation Element picker ...", { dismissable: true });
       const ideProcess = exec(ideCommand, { cwd: projectPath, maxBuffer: Infinity }, (error, stdout, stderr) => {
