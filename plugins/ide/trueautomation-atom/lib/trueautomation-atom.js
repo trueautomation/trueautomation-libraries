@@ -151,9 +151,8 @@ export default {
 
     atom.project.getPaths().forEach((path) => {
       const taConfigPath = `${path}/trueautomation.json`;
-      const taConfig = new File(taConfigPath);
 
-      if (taConfig.existsSync()) {
+      if (fs.existsSync(taConfigPath)) {
         const taConfigRead = fs.readFileSync(taConfigPath).toString();
         this.projectName = JSON.parse(taConfigRead).projectName;
         this.toggle();
