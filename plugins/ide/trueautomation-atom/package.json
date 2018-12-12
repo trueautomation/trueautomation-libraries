@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "cross-port-killer": "^1.0.1",
+    "find-process": "^1.2.1",
     "isomorphic-fetch": "^2.2.1",
     "socket.io": "^2.1.1"
   },
