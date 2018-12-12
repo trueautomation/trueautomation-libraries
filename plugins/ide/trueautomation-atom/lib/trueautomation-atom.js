@@ -4,6 +4,7 @@ import trueautomationAtomProvider from './trueautomation-atom-provider';
 import { TextEditor, CompositeDisposable, Range, Point, File, BufferedProcess } from 'atom';
 import { exec } from 'child_process';
 import { kill, killer } from 'cross-port-killer';
+import find from 'find-process';
 import fs from 'fs';
 import io from 'socket.io-client';
 
@@ -49,6 +50,7 @@ export default {
   subscriptions: null,
   markers: [],
   ide: null,
+  projectName: null,
 
   getProvider() {
     console.log('Get provider');
@@ -72,7 +74,6 @@ export default {
           notification.dismiss();
           if (error.signal !== 'SIGKILL')
             atom.notifications.addError(err, { dismissable: true });
-          this.deactivate();
           return;
         }
       });
@@ -149,10 +150,12 @@ export default {
     });
 
     atom.project.getPaths().forEach((path) => {
-      const taConfig = new File(`${path}/trueautomation.json`);
+      const taConfigPath = `${path}/trueautomation.json`;
+      const taConfig = new File(taConfigPath);
 
       if (taConfig.existsSync()) {
-        if (!this.ide) return;
+        const taConfigRead = fs.readFileSync(taConfigPath).toString();
+        this.projectName = JSON.parse(taConfigRead).projectName;
         this.toggle();
       }
     });
@@ -206,6 +209,7 @@ export default {
 
   taButton(taName, editor) {
     const markers = this.markers;
+    const projectName = this.projectName;
     const taButtonElement = document.createElement('div');
     taButtonElement.className = 'ta-element-button';
     taButtonElement.innerHTML = 'TA';
@@ -220,22 +224,29 @@ export default {
     taButtonElement.addEventListener('click', async (event) => {
       console.log('Element clicked:', taName);
 
-      const response = await fetch('http://localhost:9898/ide/selectElement', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({ name: taName }),
-      });
-
-      if (response.status === 200) {
-        const ideServerUrl = 'http://localhost:9898';
-        const socket = io(ideServerUrl);
-        socket.on('taElementSelected', () => {
-          this.scanForTaElement(editor, taName);
+      try {
+        const response = await fetch('http://localhost:9898/ide/selectElement', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({ name: taName, projectName }),
         });
-        this.runMacCmd();
+
+        if (response.status === 200) {
+          const ideServerUrl = 'http://localhost:9898';
+          const socket = io(ideServerUrl);
+          socket.on('taElementSelected', () => {
+            this.scanForTaElement(editor, taName);
+          });
+          this.runMacCmd();
+        }
+      } catch (e) {
+        console.log(e);
+        const result =  await find('port', 9898);
+        if (result.length === 0)
+          atom.notifications.addError("ERROR: TrueAutomation Element picker not started. Please start it manually `trueautomation ide` or reload the atom.", { dismissable: true });
       }
     });
 
@@ -387,23 +398,28 @@ export default {
   },
 
   scanForTa(editor, range=null) {
+    const projectName = this.projectName;
     const callback = async (result) => {
-      if (this.updateEditorText({ result, editor })) return null;
+      try {
+        if (this.updateEditorText({ result, editor })) return null;
 
-      const taName = result.match[3];
-      const elementsJson = await fetch('http://localhost:9898/ide/findElementsByNames', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({ names: [taName] }),
-      });
+        const taName = result.match[3];
+        const elementsJson = await fetch('http://localhost:9898/ide/findElementsByNames', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({ names: [taName], projectName }),
+        });
 
-      const elements = await elementsJson.json();
-      const foundClass = elements.elements.length > 0 ? 'ta-found' : 'ta-not-found';
+        const elements = await elementsJson.json();
+        const foundClass = elements.elements.length > 0 ? 'ta-found' : 'ta-not-found';
 
-      this.createTaMarkers(result, foundClass, editor);
+        this.createTaMarkers(result, foundClass, editor);
+      } catch (e) {
+        console.log(e);
+      }
     };
 
     if (!range) {
@@ -413,23 +429,28 @@ export default {
     }
   },
   scanForTaElement(editor, selector) {
+    const projectName = this.projectName;
     const callback = async (result) => {
-      if (this.updateEditorText({ result, editor })) return null;
+      try{
+        if (this.updateEditorText({ result, editor })) return null;
 
-      const taName = result.match[3];
-      const elementsJson = await fetch('http://localhost:9898/ide/findElementsByNames', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({ names: [taName] }),
-      });
+        const taName = result.match[3];
+        const elementsJson = await fetch('http://localhost:9898/ide/findElementsByNames', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({ names: [taName], projectName }),
+        });
 
-      const elements = await elementsJson.json();
-      const foundClass = elements.elements.length > 0 ? 'ta-found' : 'ta-not-found';
+        const elements = await elementsJson.json();
+        const foundClass = elements.elements.length > 0 ? 'ta-found' : 'ta-not-found';
 
-      this.createTaMarkers(result, foundClass, editor);
+        this.createTaMarkers(result, foundClass, editor);
+      } catch (e) {
+        console.log(e);
+      }
     };
 
     const regex = new RegExp("[\\s|\\(|\\=](ta|byTa|@FindByTA)\\s*\\((\\s*|\\s*taName\\s*\\=\\s*)[\\'\\\"](" + selector + ")[\\'\\\"]\\s*\\)", "g");
