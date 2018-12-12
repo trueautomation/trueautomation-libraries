@@ -245,7 +245,7 @@ export default {
         console.log(e);
         const result =  await find('port', 9898);
         if (result.length === 0)
-          atom.notifications.addError("ERROR: TrueAutomation Element picker not started. Please start it manually `trueautomation ide` or reload the atom.", { dismissable: true });
+          atom.notifications.addError("ERROR: TrueAutomation IDE process is not running! Please, reopen your project or start the process manually.", { dismissable: true });
       }
     });
 
