@@ -34,12 +34,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 const selectElementHandler = (currentDocument, currentElement) => {
-  const style = currentElement.style;
+  const style = document.defaultView.getComputedStyle(currentElement);
+  const border = style.border;
+  const color = style.borderColor;
   currentElement.style.borderWidth = "2px";
   currentElement.style.borderColor = "#ee6c4d";
   currentElement.style.borderStyle = "solid";
   getCanvas(currentDocument, currentElement).then((canvas) => {
-    currentElement.style = style;
+    currentElement.style.border = border;
+    currentElement.style.borderLeft = border;
+    currentElement.style.borderTop = border;
+    currentElement.style.borderRight = border;
+    currentElement.style.borderBottom = border;
+    currentElement.style.borderColor = color;
     sendElement(currentDocument, currentElement, canvas.toDataURL());
   });
 };
