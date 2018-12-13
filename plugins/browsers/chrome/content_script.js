@@ -24,18 +24,23 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   fetch(`${trueautomationLocalIdeServerUrl}/browser/currentElement`).then(response => response.json()).then((json) => {
     const elementName = json.name;
+    const projectName = json.projectName;
 
     if (!elementName) {
       alert('There is no TA locator to select. Use your IDE to select TA locator');
       return;
     }
-    selectElementHandler(currentDocument, clickedElement);
+    selectElementHandler(currentDocument, clickedElement, projectName);
   });
 });
 
-const selectElementHandler = (currentDocument, currentElement) => {
+const selectElementHandler = (currentDocument, currentElement, projectName) => {
+  const style = currentElement.style;
+  const body = currentDocument.body.innerHTML;
   getCanvas(currentDocument, currentElement).then((canvas) => {
-    sendElement(currentDocument, currentElement, canvas.toDataURL());
+    currentDocument.body.innerHTML = body;
+    currentElement.style = style;
+    sendElement(currentDocument, currentElement, projectName, canvas.toDataURL());
   });
 };
 
@@ -60,16 +65,35 @@ const getElementAttributes = (el) => {
 
     el = el.offsetParent;
   }
+  let width = currentElement.offsetWidth + 100;
+  let height = currentElement.offsetHeight + 100;
+  let x = xPos + window.pageXOffset - 50;
+  let y = yPos + window.pageYOffset - 50;
+  const ASPECT_RATION = 1.6;
+
+  if (width / height > ASPECT_RATION) {
+    const newHeight = width / ASPECT_RATION;
+    y -= (newHeight - height) / 2;
+    height = newHeight;
+  } else if (width / height < ASPECT_RATION) {
+    const newWidth = height * ASPECT_RATION;
+    x -= (newWidth - width) / 2;
+    width = newWidth;
+  }
+
   return {
-    x: xPos + window.pageXOffset - 20,
-    y: yPos + window.pageYOffset - 20,
-    width: currentElement.offsetWidth + 40,
-    height: currentElement.offsetHeight + 40,
+    x,
+    y,
+    width,
+    height,
   };
 };
 
 const getCanvas = (doc, currentElement) => {
   const attrs = getElementAttributes(currentElement);
+  currentElement.style.borderWidth = "2px";
+  currentElement.style.borderColor = "#ee6c4d";
+  currentElement.style.borderStyle = "solid";
   return html2canvas(doc.body, {
     x: attrs.x,
     y: attrs.y,
@@ -80,11 +104,11 @@ const getCanvas = (doc, currentElement) => {
   });
 };
 
-const sendElement = (currentDocument, currentElement, screenURL) => {
+const sendElement = (currentDocument, currentElement, projectName, screenURL) => {
   const trueautomationLocalIdeServerUrl = 'http://localhost:9898';
   const screenshot = screenURL;
   const address = findElementAddress(currentElement);
-  const htmlJson = JSON.stringify(findNodeCss(currentDocument.documentElement));
+  const htmlJson = findNodeCss(currentDocument.documentElement);
 
   fetch(`${trueautomationLocalIdeServerUrl}/browser/selectElement`, {
     method: 'POST',
@@ -93,6 +117,7 @@ const sendElement = (currentDocument, currentElement, screenURL) => {
       Accept: 'application/json',
     },
     body: JSON.stringify({
+      projectName,
       screenshot,
       address,
       html: htmlJson,
