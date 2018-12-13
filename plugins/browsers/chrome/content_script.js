@@ -34,7 +34,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 const selectElementHandler = (currentDocument, currentElement) => {
+  const style = currentElement.style;
+  currentElement.style.borderWidth = "2px";
+  currentElement.style.borderColor = "#ee6c4d";
+  currentElement.style.borderStyle = "solid";
   getCanvas(currentDocument, currentElement).then((canvas) => {
+    currentElement.style = style;
     sendElement(currentDocument, currentElement, canvas.toDataURL());
   });
 };
@@ -60,11 +65,27 @@ const getElementAttributes = (el) => {
 
     el = el.offsetParent;
   }
+  let width = currentElement.offsetWidth + 100;
+  let height = currentElement.offsetHeight + 100;
+  let x = xPos + window.pageXOffset - 50;
+  let y = yPos + window.pageYOffset - 50;
+  const aspectRatio = 1.6;
+
+  if (width / height > 1.6) {
+    const newHeight = width / aspectRatio;
+    y -= (newHeight - height) / 2;
+    height = newHeight;
+  } else if (width / height < 1.6) {
+    const newWidth = height * aspectRatio;
+    x -= (newWidth - width) / 2;
+    width = newWidth;
+  }
+
   return {
-    x: xPos + window.pageXOffset - 20,
-    y: yPos + window.pageYOffset - 20,
-    width: currentElement.offsetWidth + 40,
-    height: currentElement.offsetHeight + 40,
+    x,
+    y,
+    width,
+    height,
   };
 };
 
@@ -84,7 +105,7 @@ const sendElement = (currentDocument, currentElement, screenURL) => {
   const trueautomationLocalIdeServerUrl = 'http://localhost:9898';
   const screenshot = screenURL;
   const address = findElementAddress(currentElement);
-  const htmlJson = JSON.stringify(findNodeCss(currentDocument.documentElement));
+  const htmlJson = findNodeCss(currentDocument.documentElement);
 
   fetch(`${trueautomationLocalIdeServerUrl}/browser/selectElement`, {
     method: 'POST',
