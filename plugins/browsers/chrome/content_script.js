@@ -24,30 +24,23 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   fetch(`${trueautomationLocalIdeServerUrl}/browser/currentElement`).then(response => response.json()).then((json) => {
     const elementName = json.name;
+    const projectName = json.projectName;
 
     if (!elementName) {
       alert('There is no TA locator to select. Use your IDE to select TA locator');
       return;
     }
-    selectElementHandler(currentDocument, clickedElement);
+    selectElementHandler(currentDocument, clickedElement, projectName);
   });
 });
 
-const selectElementHandler = (currentDocument, currentElement) => {
-  const style = document.defaultView.getComputedStyle(currentElement);
-  const border = style.border;
-  const color = style.borderColor;
-  currentElement.style.borderWidth = "2px";
-  currentElement.style.borderColor = "#ee6c4d";
-  currentElement.style.borderStyle = "solid";
+const selectElementHandler = (currentDocument, currentElement, projectName) => {
+  const style = currentElement.style;
+  const body = currentDocument.body.innerHTML;
   getCanvas(currentDocument, currentElement).then((canvas) => {
-    currentElement.style.border = border;
-    currentElement.style.borderLeft = border;
-    currentElement.style.borderTop = border;
-    currentElement.style.borderRight = border;
-    currentElement.style.borderBottom = border;
-    currentElement.style.borderColor = color;
-    sendElement(currentDocument, currentElement, canvas.toDataURL());
+    currentDocument.body.innerHTML = body;
+    currentElement.style = style;
+    sendElement(currentDocument, currentElement, projectName, canvas.toDataURL());
   });
 };
 
@@ -98,6 +91,9 @@ const getElementAttributes = (el) => {
 
 const getCanvas = (doc, currentElement) => {
   const attrs = getElementAttributes(currentElement);
+  currentElement.style.borderWidth = "2px";
+  currentElement.style.borderColor = "#ee6c4d";
+  currentElement.style.borderStyle = "solid";
   return html2canvas(doc.body, {
     x: attrs.x,
     y: attrs.y,
@@ -108,7 +104,7 @@ const getCanvas = (doc, currentElement) => {
   });
 };
 
-const sendElement = (currentDocument, currentElement, screenURL) => {
+const sendElement = (currentDocument, currentElement, projectName, screenURL) => {
   const trueautomationLocalIdeServerUrl = 'http://localhost:9898';
   const screenshot = screenURL;
   const address = findElementAddress(currentElement);
@@ -121,6 +117,7 @@ const sendElement = (currentDocument, currentElement, screenURL) => {
       Accept: 'application/json',
     },
     body: JSON.stringify({
+      projectName,
       screenshot,
       address,
       html: htmlJson,
