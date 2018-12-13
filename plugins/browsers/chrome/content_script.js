@@ -69,14 +69,14 @@ const getElementAttributes = (el) => {
   let height = currentElement.offsetHeight + 100;
   let x = xPos + window.pageXOffset - 50;
   let y = yPos + window.pageYOffset - 50;
-  const aspectRatio = 1.6;
+  const ASPECT_RATION = 1.6;
 
-  if (width / height > 1.6) {
-    const newHeight = width / aspectRatio;
+  if (width / height > ASPECT_RATION) {
+    const newHeight = width / ASPECT_RATION;
     y -= (newHeight - height) / 2;
     height = newHeight;
-  } else if (width / height < 1.6) {
-    const newWidth = height * aspectRatio;
+  } else if (width / height < ASPECT_RATION) {
+    const newWidth = height * ASPECT_RATION;
     x -= (newWidth - width) / 2;
     width = newWidth;
   }
