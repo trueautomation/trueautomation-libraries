@@ -15,8 +15,7 @@
     "contextMenus",
     "webRequest",
     "webRequestBlocking",
-    "http://*/*",
-    "https://*/*"
+    "<all_urls>"
   ],
   "icons": {
     "16": "icon-small.png",

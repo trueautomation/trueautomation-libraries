@@ -36,9 +36,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 const selectElementHandler = (currentDocument, currentElement, projectName) => {
   const style = currentElement.style;
-  const body = currentDocument.body.innerHTML;
   getCanvas(currentDocument, currentElement).then((canvas) => {
-    currentDocument.body.innerHTML = body;
     currentElement.style = style;
     sendElement(currentDocument, currentElement, projectName, canvas.toDataURL());
   });
@@ -69,14 +67,14 @@ const getElementAttributes = (el) => {
   let height = currentElement.offsetHeight + 100;
   let x = xPos + window.pageXOffset - 50;
   let y = yPos + window.pageYOffset - 50;
-  const ASPECT_RATION = 1.6;
+  const ASPECT_RATIO = 1.6;
 
-  if (width / height > ASPECT_RATION) {
-    const newHeight = width / ASPECT_RATION;
+  if (width / height > ASPECT_RATIO) {
+    const newHeight = width / ASPECT_RATIO;
     y -= (newHeight - height) / 2;
     height = newHeight;
-  } else if (width / height < ASPECT_RATION) {
-    const newWidth = height * ASPECT_RATION;
+  } else if (width / height < ASPECT_RATIO) {
+    const newWidth = height * ASPECT_RATIO;
     x -= (newWidth - width) / 2;
     width = newWidth;
   }
@@ -99,8 +97,12 @@ const getCanvas = (doc, currentElement) => {
     y: attrs.y,
     width: attrs.width,
     height: attrs.height,
+    scale: 1,
     useCORS: true,
-    logging: false,
+    logging: true,
+    foreignObjectRendering: true,
+    async: false,
+    allowTaint: true,
   });
 };
 
@@ -108,7 +110,7 @@ const sendElement = (currentDocument, currentElement, projectName, screenURL) =>
   const trueautomationLocalIdeServerUrl = 'http://localhost:9898';
   const screenshot = screenURL;
   const address = findElementAddress(currentElement);
-  const htmlJson = findNodeCss(currentDocument.documentElement);
+  const htmlJson = JSON.stringify(findNodeCss(currentDocument.documentElement));
 
   fetch(`${trueautomationLocalIdeServerUrl}/browser/selectElement`, {
     method: 'POST',
