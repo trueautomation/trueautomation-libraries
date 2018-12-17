@@ -28,6 +28,5 @@
   "content_scripts": [{
     "matches": ["<all_urls>"],
     "js": ["content_script.js", "html2canvas.min.js"]
-  }],
-  "content_security_policy": "script-src 'self' http://localhost:3000/ide/index.js; object-src 'self'"
+  }]
 }
