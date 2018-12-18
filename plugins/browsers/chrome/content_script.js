@@ -39,6 +39,10 @@ const selectElementHandler = (currentDocument, currentElement, projectName) => {
   getCanvas(currentDocument, currentElement).then((canvas) => {
     currentElement.style = style;
     sendElement(currentDocument, currentElement, projectName, canvas.toDataURL());
+  }).catch((err) => {
+    console.log(err);
+    currentElement.style = style;
+    sendElement(currentDocument, currentElement, projectName, null);
   });
 };
 
@@ -92,18 +96,23 @@ const getCanvas = (doc, currentElement) => {
   currentElement.style.borderWidth = "2px";
   currentElement.style.borderColor = "#ee6c4d";
   currentElement.style.borderStyle = "solid";
-  return html2canvas(doc.body, {
-    x: attrs.x,
-    y: attrs.y,
-    width: attrs.width,
-    height: attrs.height,
-    scale: 1,
-    useCORS: true,
-    logging: true,
-    foreignObjectRendering: true,
-    async: false,
-    allowTaint: true,
-  });
+  try {
+    return html2canvas(doc.body, {
+      x: attrs.x,
+      y: attrs.y,
+      width: attrs.width,
+      height: attrs.height,
+      scale: 1,
+      useCORS: true,
+      logging: true,
+      foreignObjectRendering: true,
+      async: false,
+      allowTaint: true,
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+
 };
 
 const sendElement = (currentDocument, currentElement, projectName, screenURL) => {
