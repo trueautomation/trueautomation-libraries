@@ -14,12 +14,5 @@
     "find-process": "^1.2.1",
     "isomorphic-fetch": "^2.2.1",
     "socket.io": "^2.1.1"
-  },
-  "providedServices": {
-    "autocomplete.provider": {
-      "versions": {
-        "4.0.0": "getProvider"
-      }
-    }
   }
 }
