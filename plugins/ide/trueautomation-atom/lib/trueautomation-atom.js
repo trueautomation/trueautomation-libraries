@@ -51,7 +51,6 @@ export default {
   ide: null,
   idePort: 9898,
   projectName: null,
-  view: null,
   starting: null,
 
   runIdeCmd(ideCommand, projectPath, callback) {
