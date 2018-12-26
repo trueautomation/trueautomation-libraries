@@ -173,7 +173,7 @@ export default {
   toggle() {
     if (this.ide) {
       this.deactivate();
-    } else if (!this.starting) {
+    } else if (!this.starting && this.projectName) {
       this.starting = true;
       const run = () => {
         this.markers = [];
