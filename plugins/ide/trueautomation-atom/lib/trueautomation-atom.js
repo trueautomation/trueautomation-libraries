@@ -1,6 +1,5 @@
 'use babel';
 
-import trueautomationAtomProvider from './trueautomation-atom-provider';
 import { TextEditor, CompositeDisposable, Range, Point, File, BufferedProcess } from 'atom';
 import { exec } from 'child_process';
 import { kill, killer } from 'cross-port-killer';
@@ -50,21 +49,13 @@ export default {
   subscriptions: null,
   markers: [],
   ide: null,
+  idePort: 9898,
   projectName: null,
+  starting: null,
 
-  getProvider() {
-    console.log('Get provider');
-    if (!this.p) {
-      this.p = trueautomationAtomProvider;
-    }
-
-    return this.p;
-  },
-
-  runIdeCmd(ideCommand, projectPath) {
+  runIdeCmd(ideCommand, projectPath, callback) {
     console.log("Kill ide process if exist");
-    const idePort = 9898;
-    kill(idePort).then(() => {
+    kill(this.idePort).then(() => {
       console.log("Staring ide process...");
       const notification = atom.notifications.addInfo("Starting TrueAutomation Element picker ...", { dismissable: true });
       const ideProcess = exec(ideCommand, { cwd: projectPath, maxBuffer: Infinity }, (error, stdout, stderr) => {
@@ -83,7 +74,7 @@ export default {
           console.log("IDE process started");
           notification.dismiss();
           atom.notifications.addSuccess("TrueAutomation Element picker is started successfully!");
-          this.toggle();
+          callback();
         }
       }, 10000)
     }).catch((err) => {
@@ -110,16 +101,16 @@ export default {
     })
   },
 
-  runClientIde() {
+  runClientIde(callback) {
     const projectPath = atom.project.rootDirectories[0] && atom.project.rootDirectories[0].path;
     console.log("Project path: " + projectPath);
     const isWin = process.platform === "win32";
     const isTaInitialized = fs.existsSync(`${projectPath}/trueautomation.json`);
     if (projectPath && isTaInitialized) {
       if (!isWin) {
-        this.runIdeCmd('~/.trueautomation/bin/trueautomation ide', projectPath)
+        this.runIdeCmd('~/.trueautomation/bin/trueautomation ide', projectPath, callback)
       } else {
-        this.runIdeCmd('trueautomation ide', projectPath)
+        this.runIdeCmd('trueautomation ide', projectPath, callback)
       }
     }
   },
@@ -135,8 +126,6 @@ export default {
   },
 
   activate(state) {
-    this.runClientIde();
-
     // Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     this.subscriptions = new CompositeDisposable();
 
@@ -145,8 +134,14 @@ export default {
       'trueautomation-atom:toggle': () => this.toggle()
     }));
 
-    atom.project.onDidChangePaths(() => {
-      this.runClientIde();
+    atom.project.onDidChangePaths((path) => {
+      const taConfigPath = `${path}/trueautomation.json`;
+
+      if (fs.existsSync(taConfigPath)) {
+        const taConfigRead = fs.readFileSync(taConfigPath).toString();
+        this.projectName = JSON.parse(taConfigRead).projectName;
+        this.toggle();
+      }
     });
 
     atom.project.getPaths().forEach((path) => {
@@ -158,58 +153,75 @@ export default {
         this.toggle();
       }
     });
+    this.toggle();
   },
 
   deactivate() {
-    if (this.subscriptions) this.subscriptions.dispose();
-    const editors = atom.workspace.getTextEditors();
-    editors.forEach(editor => this.cleanTaSpaces(editor));
+    kill(this.idePort).then(() => {
+      this.markers = [];
+      this.ide = null;
+      this.starting = null;
+      const editors = atom.workspace.getTextEditors();
+      editors.forEach(editor => this.cleanTaSpaces(editor));
+      console.log('TrueAutomation IDE stoped')
+    })
   },
 
   serialize() {
   },
 
   toggle() {
-    this.markers = [];
+    if (this.ide) {
+      this.deactivate();
+    } else if (!this.starting) {
+      this.starting = true;
+      const run = () => {
+        this.markers = [];
 
-    atom.workspace.onDidDestroyPaneItem((event) => {
-      if (event.item instanceof TextEditor && fs.existsSync(event.item.getPath())) this.cleanTaSpaces(event.item);
-    });
-
-    atom.workspace.onDidChangeActiveTextEditor(editor => {
-      if (!editor || !(editor instanceof TextEditor)) return;
-      this.cleanUpLine(editor);
-      this.scanForTa(editor);
-    });
-
-    atom.workspace.observeTextEditors(editor => {
-      editor.onDidStopChanging(({ changes }) => {
-        const lastEditedPoint = editor.getCursorBufferPosition();
-        this.cleanUpLine(editor, changes.newRange);
-        this.cleanUpMarkersForRow(lastEditedPoint.row, editor);
-        this.scanForTa(editor, changes.newRange);
-      });
-
-      editor.element.onDidChangeScrollLeft(() => {
-        const visibleColumn = editor.getFirstVisibleScreenColumn();
-        editor.getOverlayDecorations().forEach(overlay => {
-          const properties = overlay.getProperties();
-          if (overlay.marker.hasChangeObservers){
-            if (overlay.marker.oldHeadScreenPosition.column < visibleColumn) {
-              overlay.setProperties({ ...properties, class: 'ta-element-hidden'});
-            } else {
-              overlay.setProperties({ ...properties, class: 'ta-element'});
-            }
-          }
+        atom.workspace.onDidDestroyPaneItem((event) => {
+          if (event.item instanceof TextEditor && fs.existsSync(event.item.getPath())) this.cleanTaSpaces(event.item);
         });
-      });
 
-      this.scanForTa(editor);
-    });
+        atom.workspace.onDidChangeActiveTextEditor(editor => {
+          if (!editor || !(editor instanceof TextEditor)) return;
+          this.cleanUpLine(editor);
+          this.scanForTa(editor);
+        });
+
+        atom.workspace.observeTextEditors(editor => {
+          editor.onDidStopChanging(({changes}) => {
+            const lastEditedPoint = editor.getCursorBufferPosition();
+            this.cleanUpLine(editor, changes.newRange);
+            this.cleanUpMarkersForRow(lastEditedPoint.row, editor);
+            this.scanForTa(editor, changes.newRange);
+          });
+
+          editor.element.onDidChangeScrollLeft(() => {
+            const visibleColumn = editor.getFirstVisibleScreenColumn();
+            editor.getOverlayDecorations().forEach(overlay => {
+              const properties = overlay.getProperties();
+              if (overlay.marker.hasChangeObservers) {
+                if (overlay.marker.oldHeadScreenPosition.column < visibleColumn) {
+                  overlay.setProperties({...properties, class: 'ta-element-hidden'});
+                } else {
+                  overlay.setProperties({...properties, class: 'ta-element'});
+                }
+              }
+            });
+          });
+
+          this.scanForTa(editor);
+        });
+
+        const editors = atom.workspace.getTextEditors();
+        editors.forEach(editor => this.scanForTa(editor));
+      };
+
+      this.runClientIde(run);
+    }
   },
 
   taButton(taName, editor) {
-    const markers = this.markers;
     const projectName = this.projectName;
     const taButtonElement = document.createElement('div');
     taButtonElement.className = 'ta-element-button';
