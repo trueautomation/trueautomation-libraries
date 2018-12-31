@@ -50,37 +50,52 @@ export default {
   markers: [],
   ide: null,
   idePort: 9898,
-  projectName: null,
+  initialized: null,
   starting: null,
 
-  runIdeCmd(ideCommand, projectPath, callback) {
+  runIdeCmd(ideCommand, projectPath, callback, attempts = 0, allowNotifications = true) {
     console.log("Kill ide process if exist");
     kill(this.idePort).then(() => {
       console.log("Staring ide process...");
-      const notification = atom.notifications.addInfo("Starting TrueAutomation Element picker ...", { dismissable: true });
+      let notification = null;
+      if (allowNotifications)
+        notification = atom.notifications.addInfo("Starting TrueAutomation Element picker ...", { dismissable: true });
       const ideProcess = exec(ideCommand, { cwd: projectPath, maxBuffer: Infinity }, (error, stdout, stderr) => {
         if (error) {
-          let err = stderr.match(/^.*error.*$/m);
-          err = err ? err[0].replace(/^.*?]\s*/,'') : error.message;
-          notification.dismiss();
-          if (error.signal !== 'SIGKILL')
-            atom.notifications.addError(err, { dismissable: true });
-          return;
+          if (notification) notification.dismiss();
+          if (attempts < 5) {
+            setTimeout(() => {
+              this.runIdeCmd(ideCommand, projectPath, callback, attempts +=1, false);
+            }, 1000);
+          } else {
+            let err = stderr.match(/^.*error.*$/m);
+            err = err ? err[0].replace(/^.*?]\s*/,'') : error.message;
+            if (error.signal !== 'SIGKILL')
+              atom.notifications.addError(err, { dismissable: true });
+            return;
+          }
         }
       });
       setTimeout(() => {
         if (!ideProcess.exitCode) {
           this.ide = ideProcess;
+          this.starting = false;
           console.log("IDE process started");
-          notification.dismiss();
-          atom.notifications.addSuccess("TrueAutomation Element picker is started successfully!");
+          if (notification) notification.dismiss();
+          if (allowNotifications) atom.notifications.addSuccess("TrueAutomation Element picker is started successfully!");
           callback();
         }
       }, 10000)
     }).catch((err) => {
-      console.log("ERROR: " + err);
-      atom.notifications.addError("ERROR: " + err);
-      return;
+      if (attempts < 5) {
+        setTimeout(() => {
+          this.runIdeCmd(ideCommand, projectPath, callback, attempts +=1, false)
+        }, 1000);
+      } else {
+        console.log("ERROR: " + err);
+        atom.notifications.addError("ERROR: " + err);
+        return;
+      }
     });
   },
 
@@ -103,15 +118,11 @@ export default {
 
   runClientIde(callback) {
     const projectPath = atom.project.rootDirectories[0] && atom.project.rootDirectories[0].path;
-    console.log("Project path: " + projectPath);
     const isWin = process.platform === "win32";
-    const isTaInitialized = fs.existsSync(`${projectPath}/trueautomation.json`);
-    if (projectPath && isTaInitialized) {
-      if (!isWin) {
-        this.runIdeCmd('~/.trueautomation/bin/trueautomation ide', projectPath, callback)
-      } else {
-        this.runIdeCmd('trueautomation ide', projectPath, callback)
-      }
+    if (!isWin) {
+      this.runIdeCmd('~/.trueautomation/bin/trueautomation ide', projectPath, callback)
+    } else {
+      this.runIdeCmd('trueautomation ide', projectPath, callback)
     }
   },
 
@@ -135,23 +146,13 @@ export default {
     }));
 
     atom.project.onDidChangePaths((path) => {
-      const taConfigPath = `${path}/trueautomation.json`;
-
-      if (fs.existsSync(taConfigPath)) {
-        const taConfigRead = fs.readFileSync(taConfigPath).toString();
-        this.projectName = JSON.parse(taConfigRead).projectName;
-        this.toggle();
-      }
+      this.initialized = true;
+      this.toggle();
     });
 
     atom.project.getPaths().forEach((path) => {
-      const taConfigPath = `${path}/trueautomation.json`;
-
-      if (fs.existsSync(taConfigPath)) {
-        const taConfigRead = fs.readFileSync(taConfigPath).toString();
-        this.projectName = JSON.parse(taConfigRead).projectName;
-        this.toggle();
-      }
+      this.initialized = true;
+      this.toggle();
     });
     this.toggle();
   },
@@ -161,6 +162,7 @@ export default {
       this.markers = [];
       this.ide = null;
       this.starting = null;
+      this.initialized = null;
       const editors = atom.workspace.getTextEditors();
       editors.forEach(editor => this.cleanTaSpaces(editor));
       console.log('TrueAutomation IDE stoped')
@@ -171,9 +173,9 @@ export default {
   },
 
   toggle() {
-    if (this.ide) {
+    if (!this.starting && this.ide) {
       this.deactivate();
-    } else if (!this.starting && this.projectName) {
+    } else if (!this.starting && this.initialized) {
       this.starting = true;
       const run = () => {
         this.markers = [];
@@ -221,8 +223,17 @@ export default {
     }
   },
 
+  getProjectName(editor) {
+    const projectPath = atom.project.getPaths().find(path => editor.getDirectoryPath() && editor.getDirectoryPath().includes(path));
+    if (!projectPath) return null;
+    const taConfigPath = `${projectPath}/trueautomation.json`;
+    if (!fs.existsSync(taConfigPath)) return null;
+    const taConfigRead = fs.readFileSync(taConfigPath).toString();
+    return JSON.parse(taConfigRead).projectName;
+  },
+
   taButton(taName, editor) {
-    const projectName = this.projectName;
+    const projectName = this.getProjectName(editor);
     const taButtonElement = document.createElement('div');
     taButtonElement.className = 'ta-element-button';
     taButtonElement.innerHTML = 'TA';
@@ -236,6 +247,8 @@ export default {
 
     taButtonElement.addEventListener('click', async (event) => {
       console.log('Element clicked:', taName);
+
+      if (!projectName) return atom.notifications.addError("Project name is not set. Run `trueautomation init` to set the project name.", { dismissable: true });
 
       try {
         const response = await fetch('http://localhost:9898/ide/selectElement', {
@@ -411,23 +424,28 @@ export default {
   },
 
   scanForTa(editor, range=null) {
-    const projectName = this.projectName;
+    const projectName = this.getProjectName(editor);
     const callback = async (result) => {
       try {
         if (this.updateEditorText({ result, editor })) return null;
 
-        const taName = result.match[3];
-        const elementsJson = await fetch('http://localhost:9898/ide/findElementsByNames', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: JSON.stringify({ names: [taName], projectName }),
-        });
+        let foundClass;
+        if (projectName) {
+          const taName = result.match[3];
+          const elementsJson = await fetch('http://localhost:9898/ide/findElementsByNames', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            body: JSON.stringify({ names: [taName], projectName }),
+          });
 
-        const elements = await elementsJson.json();
-        const foundClass = elements.elements.length > 0 ? 'ta-found' : 'ta-not-found';
+          const elements = await elementsJson.json();
+          foundClass = elements.elements.length > 0 ? 'ta-found' : 'ta-not-found';
+        } else {
+          foundClass = 'ta-not-found';
+        }
 
         this.createTaMarkers(result, foundClass, editor);
       } catch (e) {
@@ -442,23 +460,28 @@ export default {
     }
   },
   scanForTaElement(editor, selector) {
-    const projectName = this.projectName;
+    const projectName = this.getProjectName(editor);
     const callback = async (result) => {
       try{
         if (this.updateEditorText({ result, editor })) return null;
 
-        const taName = result.match[3];
-        const elementsJson = await fetch('http://localhost:9898/ide/findElementsByNames', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: JSON.stringify({ names: [taName], projectName }),
-        });
+        let foundClass;
+        if (projectName) {
+          const taName = result.match[3];
+          const elementsJson = await fetch('http://localhost:9898/ide/findElementsByNames', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            body: JSON.stringify({ names: [taName], projectName }),
+          });
 
-        const elements = await elementsJson.json();
-        const foundClass = elements.elements.length > 0 ? 'ta-found' : 'ta-not-found';
+          const elements = await elementsJson.json();
+          foundClass = elements.elements.length > 0 ? 'ta-found' : 'ta-not-found';
+        } else {
+          foundClass = 'ta-not-found';
+        }
 
         this.createTaMarkers(result, foundClass, editor);
       } catch (e) {
