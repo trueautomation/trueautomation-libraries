@@ -120,9 +120,9 @@ export default {
     const projectPath = atom.project.rootDirectories[0] && atom.project.rootDirectories[0].path;
     const isWin = process.platform === "win32";
     if (!isWin) {
-      this.runIdeCmd('~/.trueautomation/bin/trueautomation ide', projectPath, callback)
+      this.runIdeCmd('~/.trueautomation/bin/trueautomation ide --logs', projectPath, callback)
     } else {
-      this.runIdeCmd('trueautomation ide', projectPath, callback)
+      this.runIdeCmd('trueautomation ide --logs', projectPath, callback)
     }
   },
 
