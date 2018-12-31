@@ -53,12 +53,12 @@ export default {
   initialized: null,
   starting: null,
 
-  runIdeCmd(ideCommand, projectPath, callback, attempts = 0, notifications = true) {
+  runIdeCmd(ideCommand, projectPath, callback, attempts = 0, allowNotifications = true) {
     console.log("Kill ide process if exist");
     kill(this.idePort).then(() => {
       console.log("Staring ide process...");
       let notification = null;
-      if (notifications)
+      if (allowNotifications)
         notification = atom.notifications.addInfo("Starting TrueAutomation Element picker ...", { dismissable: true });
       const ideProcess = exec(ideCommand, { cwd: projectPath, maxBuffer: Infinity }, (error, stdout, stderr) => {
         if (error) {
@@ -82,7 +82,7 @@ export default {
           this.starting = false;
           console.log("IDE process started");
           if (notification) notification.dismiss();
-          if (notifications) atom.notifications.addSuccess("TrueAutomation Element picker is started successfully!");
+          if (allowNotifications) atom.notifications.addSuccess("TrueAutomation Element picker is started successfully!");
           callback();
         }
       }, 10000)
