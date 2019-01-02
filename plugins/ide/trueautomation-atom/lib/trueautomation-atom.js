@@ -52,6 +52,7 @@ export default {
   idePort: 9898,
   initialized: null,
   starting: null,
+  projectNotFound: false,
 
   runIdeCmd(ideCommand, projectPath, callback, attempts = 0, allowNotifications = true) {
     console.log("Kill ide process if exist");
@@ -249,6 +250,7 @@ export default {
       console.log('Element clicked:', taName);
 
       if (!projectName) return atom.notifications.addError("Project name is not set. Run `trueautomation init` to set the project name.", { dismissable: true });
+      if (this.projectNotFound) return atom.notifications.addError("Project name was not found. Please run `trueautomation init` to create a new project or use the existing one.", { dismissable: true });
 
       try {
         const response = await fetch('http://localhost:9898/ide/selectElement', {
@@ -441,8 +443,15 @@ export default {
             body: JSON.stringify({ names: [taName], projectName }),
           });
 
-          const elements = await elementsJson.json();
-          foundClass = elements.elements.length > 0 ? 'ta-found' : 'ta-not-found';
+          if (elementsJson.status !== 200 ) {
+            console.log(await elementsJson.text());
+            this.projectNotFound = true;
+            foundClass = 'ta-not-found';
+          } else {
+            this.projectNotFound = false;
+            const elements = await elementsJson.json();
+            foundClass = elements.hasOwnProperty('elements') && elements.elements.length > 0 ? 'ta-found' : 'ta-not-found';
+          }
         } else {
           foundClass = 'ta-not-found';
         }
@@ -477,8 +486,15 @@ export default {
             body: JSON.stringify({ names: [taName], projectName }),
           });
 
-          const elements = await elementsJson.json();
-          foundClass = elements.elements.length > 0 ? 'ta-found' : 'ta-not-found';
+          if (elementsJson.status !== 200 ) {
+            console.log(await elementsJson.text());
+            this.projectNotFound = true;
+            foundClass = 'ta-not-found';
+          } else {
+            this.projectNotFound = false;
+            const elements = await elementsJson.json();
+            foundClass = elements.hasOwnProperty('elements') && elements.elements.length > 0 ? 'ta-found' : 'ta-not-found';
+          }
         } else {
           foundClass = 'ta-not-found';
         }
