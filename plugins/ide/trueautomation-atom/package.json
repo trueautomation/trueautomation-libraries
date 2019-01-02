@@ -1,7 +1,7 @@
 {
   "name": "trueautomation-atom",
   "main": "./lib/trueautomation-atom",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Write your tests faster and make them more reliable with TrueAutomation.IO smart locators.",
   "keywords": [],
   "repository": "https://github.com/educator-io/trueautomation-atom",
