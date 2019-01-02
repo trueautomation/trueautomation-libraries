@@ -52,7 +52,7 @@ export default {
   idePort: 9898,
   initialized: null,
   starting: null,
-  projectNotFound: null,
+  projectNotFound: false,
 
   runIdeCmd(ideCommand, projectPath, callback, attempts = 0, allowNotifications = true) {
     console.log("Kill ide process if exist");
@@ -448,7 +448,7 @@ export default {
             this.projectNotFound = true;
             foundClass = 'ta-not-found';
           } else {
-            this.projectNotFound = null;
+            this.projectNotFound = false;
             const elements = await elementsJson.json();
             foundClass = elements.hasOwnProperty('elements') && elements.elements.length > 0 ? 'ta-found' : 'ta-not-found';
           }
@@ -491,7 +491,7 @@ export default {
             this.projectNotFound = true;
             foundClass = 'ta-not-found';
           } else {
-            this.projectNotFound = null;
+            this.projectNotFound = false;
             const elements = await elementsJson.json();
             foundClass = elements.hasOwnProperty('elements') && elements.elements.length > 0 ? 'ta-found' : 'ta-not-found';
           }
