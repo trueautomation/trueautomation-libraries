@@ -443,11 +443,10 @@ export default {
             body: JSON.stringify({ names: [taName], projectName }),
           });
 
-          const res = await elementsJson;
-          console.log(res);
-          if (res.status !== 200 ) {
+          if (elementsJson.status !== 200 ) {
+            console.log(await elementsJson.text());
+            this.projectNotFound = true;
             foundClass = 'ta-not-found';
-            this.projectNotFound = await elementsJson.text();
           } else {
             this.projectNotFound = null;
             const elements = await elementsJson.json();
@@ -487,9 +486,9 @@ export default {
             body: JSON.stringify({ names: [taName], projectName }),
           });
 
-          const res = await elementsJson;
-          if (res.status !== 200 ) {
-            this.projectNotFound = await elementsJson.text();
+          if (elementsJson.status !== 200 ) {
+            console.log(await elementsJson.text());
+            this.projectNotFound = true;
             foundClass = 'ta-not-found';
           } else {
             this.projectNotFound = null;
