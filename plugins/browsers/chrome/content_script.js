@@ -40,6 +40,15 @@ const selectElementHandler = (currentDocument, currentElement, projectName) => {
   const scrollTop = currentElement.scrollTop || currentDocument.documentElement.scrollTop;
   const size = getSize(currentDocument, currentElement);
   const isFixed = elementIsFixed(currentDocument, currentElement);
+
+  const body = currentDocument.body;
+  const html = currentDocument.documentElement;
+
+  const height = Math.max( body.scrollHeight, body.offsetHeight,
+    html.clientHeight, html.scrollHeight, html.offsetHeight );
+
+  body.style.height = `${height}px`;
+
   currentDocument.defaultView.scroll(0, 0);
   getCanvas(currentDocument, currentElement).then((canvas) => {
     if (!isFixed) currentDocument.defaultView.scroll(scrollLeft, scrollTop);
