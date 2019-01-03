@@ -36,9 +36,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 const selectElementHandler = (currentDocument, currentElement, projectName) => {
   const style = currentElement.style;
+  const scrollLeft = currentElement.scrollLeft || currentDocument.documentElement.scrollLeft;
+  const scrollTop = currentElement.scrollTop || currentDocument.documentElement.scrollTop;
+  const size = getSize(currentDocument, currentElement);
+  const isFixed = elementIsFixed(currentDocument, currentElement);
+  currentDocument.defaultView.scroll(0, 0);
   getCanvas(currentDocument, currentElement).then((canvas) => {
+    if (!isFixed) currentDocument.defaultView.scroll(scrollLeft, scrollTop);
     currentElement.style = style;
-    sendElement(currentDocument, currentElement, projectName, canvas.toDataURL());
+    const base64 = cutCanvas(currentDocument, currentElement, canvas, size);
+    console.log(base64);
+    currentDocument.defaultView.scroll(scrollLeft, scrollTop);
+    sendElement(currentDocument, currentElement, projectName, base64);
   }).catch((err) => {
     console.log(err);
     currentElement.style = style;
@@ -46,11 +55,9 @@ const selectElementHandler = (currentDocument, currentElement, projectName) => {
   });
 };
 
-const getElementAttributes = (el) => {
+const getPosition = (doc, el, isFixed) => {
   let xPos = 0;
   let yPos = 0;
-  const currentElement = el;
-
   while (el) {
     if (el.tagName == 'BODY') {
       // deal with browser quirks with body/window/document and page scroll
@@ -61,16 +68,31 @@ const getElementAttributes = (el) => {
       yPos += (el.offsetTop - yScroll + el.clientTop);
     } else {
       // for all other non-BODY elements
-      xPos += (el.offsetLeft - el.scrollLeft + el.clientLeft);
-      yPos += (el.offsetTop - el.scrollTop + el.clientTop);
+      xPos += (el.offsetLeft + el.clientLeft) || 0;
+      yPos += (el.offsetTop + el.clientTop) || 0;
     }
 
-    el = el.offsetParent;
+    el = isFixed ? el.offsetParent : el.offsetParent || el.parentElement;
   }
-  let width = currentElement.offsetWidth + 100;
-  let height = currentElement.offsetHeight + 100;
-  let x = xPos + window.pageXOffset - 50;
-  let y = yPos + window.pageYOffset - 50;
+  const x = xPos + window.pageXOffset - 50;
+  const y = yPos + window.pageYOffset - 50;
+  return { x, y };
+};
+
+const getSize = (doc, el) => {
+  const width = el.offsetWidth || el.clientWidth || parseInt(doc.defaultView.getComputedStyle(el).width);
+  const height = el.offsetHeight || el.clientHeight || parseInt(doc.defaultView.getComputedStyle(el).height);
+
+  return { width, height };
+};
+
+const getElementAttributes = (doc, el, size, isFixed) => {
+  const position = getPosition(doc, el, isFixed);
+  let x = position.x;
+  let y = position.y;
+  let width = size.width + 100;
+  let height = size.height + 100;
+
   const ASPECT_RATIO = 1.6;
 
   if (width / height > ASPECT_RATIO) {
@@ -92,16 +114,11 @@ const getElementAttributes = (el) => {
 };
 
 const getCanvas = (doc, currentElement) => {
-  const attrs = getElementAttributes(currentElement);
   currentElement.style.borderWidth = "2px";
   currentElement.style.borderColor = "#ee6c4d";
   currentElement.style.borderStyle = "solid";
   try {
     return html2canvas(doc.body, {
-      x: attrs.x,
-      y: attrs.y,
-      width: attrs.width,
-      height: attrs.height,
       scale: 1,
       useCORS: true,
       logging: true,
@@ -112,7 +129,33 @@ const getCanvas = (doc, currentElement) => {
   } catch (e) {
     return Promise.reject(e);
   }
+};
 
+const elementIsFixed = (doc, el) => {
+  if (['fixed', 'absolute'].includes(doc.defaultView.getComputedStyle(el).position)) return true;
+  if (el.tagName === 'BODY') return false;
+  return elementIsFixed(doc, el.parentElement);
+};
+
+const getImageURL = (doc, attrs, imgData) => {
+  const canv = document.createElement('canvas');
+  const cont = canv.getContext('2d');
+  canv.width = attrs.width;
+  canv.height = attrs.height;
+  cont.putImageData(imgData, 0, 0);
+  return canv.toDataURL(); //image URL
+};
+
+const cutCanvas = (doc, el, canvas, size) => {
+  const scrollLeft = el.scrollLeft || doc.documentElement.scrollLeft;
+  const scrollTop = el.scrollTop || doc.documentElement.scrollTop;
+  const isFixed = elementIsFixed(doc, el);
+  const attrs = getElementAttributes(doc, el, size, isFixed);
+  const x = isFixed ? attrs.x - scrollLeft : attrs.x;
+  const y = isFixed ? attrs.y - scrollTop : attrs.y;
+  const ctx = canvas.getContext('2d');
+  const imgData = ctx.getImageData(x, y, attrs.width, attrs.height);
+  return getImageURL(doc, attrs, imgData);
 };
 
 const sendElement = (currentDocument, currentElement, projectName, screenURL) => {
