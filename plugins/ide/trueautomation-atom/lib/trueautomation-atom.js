@@ -53,8 +53,9 @@ export default {
   initialized: null,
   starting: null,
   projectNotFound: false,
+  attempts: 5,
 
-  runIdeCmd(ideCommand, projectPath, callback, attempts = 0, allowNotifications = true) {
+  runIdeCmd(ideCommand, projectPath, callback, allowNotifications = true) {
     console.log("Kill ide process if exist");
     kill(this.idePort).then(() => {
       console.log("Staring ide process...");
@@ -64,9 +65,9 @@ export default {
       const ideProcess = exec(ideCommand, { cwd: projectPath, maxBuffer: Infinity }, (error, stdout, stderr) => {
         if (error) {
           if (notification) notification.dismiss();
-          if (attempts < 5) {
+          if (this.attempts > 0) {
             setTimeout(() => {
-              this.runIdeCmd(ideCommand, projectPath, callback, attempts +=1, false);
+              this.runIdeCmd(ideCommand, projectPath, callback, this.attempts -=1, false);
             }, 1000);
           } else {
             let err = stderr.match(/^.*error.*$/m);
@@ -81,6 +82,7 @@ export default {
         if (!ideProcess.exitCode) {
           this.ide = ideProcess;
           this.starting = false;
+          this.attempts = 0;
           console.log("IDE process started");
           if (notification) notification.dismiss();
           if (allowNotifications) atom.notifications.addSuccess("TrueAutomation Element picker is started successfully!");
@@ -88,9 +90,9 @@ export default {
         }
       }, 10000)
     }).catch((err) => {
-      if (attempts < 5) {
+      if (this.attempts > 0) {
         setTimeout(() => {
-          this.runIdeCmd(ideCommand, projectPath, callback, attempts +=1, false)
+          this.runIdeCmd(ideCommand, projectPath, callback, this.attempts -=1, false)
         }, 1000);
       } else {
         console.log("ERROR: " + err);
