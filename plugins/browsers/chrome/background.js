@@ -35,14 +35,14 @@ chrome.contextMenus.create({
   }
 });
 
-chrome.runtime.onMessage.addListener(
-  function(request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.msg === "capture") {
     chrome.tabs.captureVisibleTab(
       null,
       {},
-      function(dataUrl){
+      (dataUrl) =>  {
         sendResponse({imgSrc: dataUrl});
       }); //remember that captureVisibleTab() is a statement
-    return true;
   }
-);
+  return true;
+});
