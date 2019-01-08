@@ -45,6 +45,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 const selectElementHandler = (dataUrl, currentDocument, currentElement, projectName, style, callback) => {
   const width = currentDocument.defaultView.innerWidth;
   const height = currentDocument.defaultView.innerHeight;
+  const devicePixelRatio = currentDocument.defaultView.devicePixelRatio * 1.0;
 
   const img = new Image();
   img.style.width = `${width}px`;
@@ -55,10 +56,10 @@ const selectElementHandler = (dataUrl, currentDocument, currentElement, projectN
   const attrs = currentElement.getBoundingClientRect();
   const ASPECT_RATIO = 1.6;
 
-  let x = (attrs.x - 50) * 2;
-  let y = (attrs.y - 50) * 2;
-  let elWidth = (attrs.width + 100) * 2;
-  let elHeight = (attrs.height + 100) * 2;
+  let x = (attrs.x - 50) * devicePixelRatio;
+  let y = (attrs.y - 50) * devicePixelRatio;
+  let elWidth = (attrs.width + 100) * devicePixelRatio;
+  let elHeight = (attrs.height + 100) * devicePixelRatio;
 
   if (elWidth / elHeight > ASPECT_RATIO) {
     const newHeight = elWidth / ASPECT_RATIO;
@@ -70,11 +71,11 @@ const selectElementHandler = (dataUrl, currentDocument, currentElement, projectN
     elWidth = newWidth;
   }
 
-  canvas.width = elWidth/2;
-  canvas.height = elHeight/2;
+  canvas.width = elWidth/devicePixelRatio;
+  canvas.height = elHeight/devicePixelRatio;
 
   img.onload = () => {
-    ctx.drawImage(img, x, y, elWidth, elHeight, 0, 0, elWidth/2, elHeight/2);
+    ctx.drawImage(img, x, y, elWidth, elHeight, 0, 0, elWidth/devicePixelRatio, elHeight/devicePixelRatio);
     const base64 = canvas.toDataURL();
     console.log(base64);
     currentElement.style = style;
