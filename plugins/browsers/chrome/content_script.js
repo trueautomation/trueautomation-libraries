@@ -70,11 +70,11 @@ const selectElementHandler = (dataUrl, currentDocument, currentElement, projectN
     elWidth = newWidth;
   }
 
-  canvas.width = elWidth;
-  canvas.height = elHeight;
+  canvas.width = elWidth/2;
+  canvas.height = elHeight/2;
 
   img.onload = () => {
-    ctx.drawImage(img, x, y, elWidth, elHeight, 0, 0, elWidth, elHeight);
+    ctx.drawImage(img, x, y, elWidth, elHeight, 0, 0, elWidth/2, elHeight/2);
     const base64 = canvas.toDataURL();
     console.log(base64);
     currentElement.style = style;
