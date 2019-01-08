@@ -43,31 +43,22 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 const selectElementHandler = (dataUrl, currentDocument, currentElement, projectName, style) => {
-  console.log(dataUrl);
-  cutCanvas(currentDocument, currentElement, projectName, dataUrl, style);
-};
-
-const cutCanvas = (doc, el, projectName, dataUrl, style) => {
-  const width = doc.defaultView.innerWidth;
-  const height = doc.defaultView.innerHeight;
-
-  console.log("window width:", width);
-  console.log("window height:", height);
+  const width = currentDocument.defaultView.innerWidth;
+  const height = currentDocument.defaultView.innerHeight;
 
   const img = new Image();
   img.style.width = `${width}px`;
   img.style.height = `${height}px`;
 
-  const canvas = doc.createElement('canvas');
+  const canvas = currentDocument.createElement('canvas');
   const ctx = canvas.getContext('2d');
-  const attrs = el.getBoundingClientRect();
+  const attrs = currentElement.getBoundingClientRect();
   const ASPECT_RATIO = 1.6;
 
   let x = (attrs.x - 50) * 2;
   let y = (attrs.y - 50) * 2;
   let elWidth = (attrs.width + 100) * 2;
   let elHeight = (attrs.height + 100) * 2;
-  console.log(x, y, elWidth, elHeight);
 
   if (elWidth / elHeight > ASPECT_RATIO) {
     const newHeight = elWidth / ASPECT_RATIO;
@@ -79,18 +70,15 @@ const cutCanvas = (doc, el, projectName, dataUrl, style) => {
     elWidth = newWidth;
   }
 
-  console.log(x, y, elWidth, elHeight);
-
   canvas.width = elWidth;
   canvas.height = elHeight;
-  console.log('Element attrs:', attrs);
 
   img.onload = () => {
     ctx.drawImage(img, x, y, elWidth, elHeight, 0, 0, elWidth, elHeight);
     const base64 = canvas.toDataURL();
     console.log(base64);
-    el.style = style;
-    sendElement(doc, el, projectName, base64);
+    currentElement.style = style;
+    sendElement(currentDocument, currentElement, projectName, base64);
   };
 
   img.src = dataUrl;
