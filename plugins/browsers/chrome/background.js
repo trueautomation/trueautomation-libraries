@@ -38,8 +38,6 @@ chrome.contextMenus.create({
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.msg === "capture") {
     chrome.tabs.captureVisibleTab(
-      null,
-      {},
       (dataUrl) =>  {
         sendResponse({imgSrc: dataUrl});
       }); //remember that captureVisibleTab() is a statement
