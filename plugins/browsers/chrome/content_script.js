@@ -42,7 +42,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   });
 });
 
-const selectElementHandler = (dataUrl, currentDocument, currentElement, projectName, style) => {
+const selectElementHandler = (dataUrl, currentDocument, currentElement, projectName, style, callback) => {
   const width = currentDocument.defaultView.innerWidth;
   const height = currentDocument.defaultView.innerHeight;
 
@@ -78,6 +78,7 @@ const selectElementHandler = (dataUrl, currentDocument, currentElement, projectN
     const base64 = canvas.toDataURL();
     console.log(base64);
     currentElement.style = style;
+    if (callback) callback();
     sendElement(currentDocument, currentElement, projectName, base64);
   };
 
