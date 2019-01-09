@@ -31,18 +31,25 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       return;
     }
 
-    const style = clickedElement.style;
-    clickedElement.style.borderWidth = "2px";
-    clickedElement.style.borderColor = "#ee6c4d";
-    clickedElement.style.borderStyle = "solid";
+    // Add border style for clickedElement
+    const tagName = clickedElement.tagName;
+    clickedElement.classList.add("taClicked");
 
-    chrome.runtime.sendMessage({msg: "capture"}, (response) => {
-      selectElementHandler(response.imgSrc, currentDocument, clickedElement, projectName, style);
-    });
+    const css = `${tagName}.taClicked { border: 2px solid #ee6c4d !important; }`;
+    const style = currentDocument.createElement('style');
+    style.appendChild(currentDocument.createTextNode(css));
+    currentDocument.head.appendChild(style);
+
+    //Screenshot page and selectElementHandler
+    setTimeout(() => {
+      chrome.runtime.sendMessage({msg: "capture"}, (response) => {
+        selectElementHandler(response.imgSrc, currentDocument, clickedElement, style, projectName);
+      });
+    }, 100);
   });
 });
 
-const selectElementHandler = (dataUrl, currentDocument, currentElement, projectName, style, callback) => {
+const selectElementHandler = (dataUrl, currentDocument, currentElement, style, projectName, callback) => {
   const width = currentDocument.defaultView.innerWidth;
   const height = currentDocument.defaultView.innerHeight;
   const devicePixelRatio = currentDocument.defaultView.devicePixelRatio * 1.0;
@@ -78,7 +85,8 @@ const selectElementHandler = (dataUrl, currentDocument, currentElement, projectN
     ctx.drawImage(img, x, y, elWidth, elHeight, 0, 0, elWidth/devicePixelRatio, elHeight/devicePixelRatio);
     const base64 = canvas.toDataURL();
     console.log(base64);
-    currentElement.style = style;
+    style.remove();
+    currentElement.classList.remove("taClicked");
     if (callback) callback();
     sendElement(currentDocument, currentElement, projectName, base64);
   };
