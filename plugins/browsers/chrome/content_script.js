@@ -86,7 +86,7 @@ const selectElementHandler = (dataUrl, currentDocument, currentElement, style, p
     const base64 = canvas.toDataURL();
     console.log(base64);
     style.remove();
-    clickedElement.classList.remove("taClicked");
+    currentElement.classList.remove("taClicked");
     if (callback) callback();
     sendElement(currentDocument, currentElement, projectName, base64);
   };
