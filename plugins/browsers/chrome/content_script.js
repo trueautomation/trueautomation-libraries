@@ -6,19 +6,6 @@ document.addEventListener("mousedown", (event) => {
   currentDocument = document;
 }, true);
 
-const iframes = [...document.getElementsByTagName('iframe')];
-if (iframes.length > 0) {
-  iframes.forEach((iframe) => {
-    const doc = iframe.contentDocument;
-    if (doc) {
-      doc.addEventListener('mousedown', (event) => {
-        clickedElement = event.target;
-        currentDocument = doc;
-      });
-    }
-  });
-}
-
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   const trueautomationLocalIdeServerUrl = 'http://localhost:9898';
 
@@ -50,9 +37,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 const selectElementHandler = (dataUrl, currentDocument, currentElement, style, projectName, callback) => {
-  const width = currentDocument.defaultView.innerWidth;
-  const height = currentDocument.defaultView.innerHeight;
-  const devicePixelRatio = currentDocument.defaultView.devicePixelRatio * 1.0;
+  const topWindow = currentDocument.defaultView.top;
+  const width = topWindow.innerWidth;
+  const height = topWindow.innerHeight;
+  const devicePixelRatio = topWindow.devicePixelRatio * 1.0;
 
   const img = new Image();
   img.style.width = `${width}px`;
@@ -61,10 +49,21 @@ const selectElementHandler = (dataUrl, currentDocument, currentElement, style, p
   const canvas = currentDocument.createElement('canvas');
   const ctx = canvas.getContext('2d');
   const attrs = currentElement.getBoundingClientRect();
+  console.log(attrs);
+  let offsetLeft = 0;
+  let offsetTop = 0;
+
+  if (topWindow !== currentDocument.defaultView) {
+    const iframes = [...topWindow.document.getElementsByTagName('iframe')];
+    const iframe = iframes.find((elem) => elem.contentDocument === currentDocument);
+    const iframeAttrs = iframe.getBoundingClientRect();
+    offsetLeft = iframeAttrs.x;
+    offsetTop = iframeAttrs.y;
+  }
   const ASPECT_RATIO = 1.6;
 
-  let x = (attrs.x - 50) * devicePixelRatio;
-  let y = (attrs.y - 50) * devicePixelRatio;
+  let x = (attrs.x + offsetLeft - 50) * devicePixelRatio;
+  let y = (attrs.y + offsetTop - 50) * devicePixelRatio;
   let elWidth = (attrs.width + 100) * devicePixelRatio;
   let elHeight = (attrs.height + 100) * devicePixelRatio;
 
