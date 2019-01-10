@@ -28,6 +28,7 @@
   },
   "content_scripts": [{
     "matches": ["<all_urls>"],
-    "js": ["content_script.js", "html2canvas.min.js"]
+    "js": ["content_script.js", "html2canvas.min.js"],
+    "all_frames": true
   }]
 }
