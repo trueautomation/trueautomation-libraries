@@ -49,7 +49,6 @@ const selectElementHandler = (dataUrl, currentDocument, currentElement, style, p
   const canvas = currentDocument.createElement('canvas');
   const ctx = canvas.getContext('2d');
   const attrs = currentElement.getBoundingClientRect();
-  console.log(attrs);
   let offsetLeft = 0;
   let offsetTop = 0;
 
