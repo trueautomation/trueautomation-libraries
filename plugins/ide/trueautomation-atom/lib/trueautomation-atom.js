@@ -55,10 +55,9 @@ export default {
   attempts: 5,
 
   findOrStartIDE(cb) {
-    find('port', 9898).then((list) => {
+    find('name', 'trueautomation ide').then((list) => {
+      console.log(list);
       if (!list.length) return this.runClientIde(cb);
-      const trueautomationProcess = list.find((proc) => proc.name === 'trueautomation');
-      if (!trueautomationProcess) return this.runClientIde(cb);
       return cb();
     });
   },
