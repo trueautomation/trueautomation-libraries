@@ -2,7 +2,6 @@
 
 import { TextEditor, CompositeDisposable, Range, Point, File, BufferedProcess } from 'atom';
 import { exec } from 'child_process';
-import { kill, killer } from 'cross-port-killer';
 import find from 'find-process';
 import fs from 'fs';
 import io from 'socket.io-client';
@@ -57,49 +56,37 @@ export default {
 
   runIdeCmd(ideCommand, projectPath, callback, allowNotifications = true) {
     console.log("Kill ide process if exist");
-    kill(this.idePort).then(() => {
-      console.log("Staring ide process...");
-      let notification = null;
-      if (allowNotifications)
-        notification = atom.notifications.addInfo("Starting TrueAutomation Element picker ...", { dismissable: true });
-      const ideProcess = exec(ideCommand, { cwd: projectPath, maxBuffer: Infinity }, (error, stdout, stderr) => {
-        if (error) {
-          if (notification) notification.dismiss();
-          if (this.attempts > 0) {
-            setTimeout(() => {
-              this.runIdeCmd(ideCommand, projectPath, callback, this.attempts -=1, false);
-            }, 1000);
-          } else {
-            let err = stderr.match(/^.*error.*$/m);
-            err = err ? err[0].replace(/^.*?]\s*/,'') : error.message;
-            if (error.signal !== 'SIGKILL')
-              atom.notifications.addError(err, { dismissable: true });
-            return;
-          }
+    console.log("Staring ide process...");
+    let notification = null;
+    if (allowNotifications)
+      notification = atom.notifications.addInfo("Starting TrueAutomation Element picker ...", { dismissable: true });
+    const ideProcess = exec(ideCommand, { cwd: projectPath, maxBuffer: Infinity }, (error, stdout, stderr) => {
+      if (error) {
+        if (notification) notification.dismiss();
+        if (this.attempts > 0) {
+          setTimeout(() => {
+            this.runIdeCmd(ideCommand, projectPath, callback, this.attempts -=1, false);
+          }, 1000);
+        } else {
+          let err = stderr.match(/^.*error.*$/m);
+          err = err ? err[0].replace(/^.*?]\s*/,'') : error.message;
+          if (error.signal !== 'SIGKILL')
+            atom.notifications.addError(err, { dismissable: true });
+          return;
         }
-      });
-      setTimeout(() => {
-        if (!ideProcess.exitCode) {
-          this.ide = ideProcess;
-          this.starting = false;
-          this.attempts = 0;
-          console.log("IDE process started");
-          if (notification) notification.dismiss();
-          if (allowNotifications) atom.notifications.addSuccess("TrueAutomation Element picker is started successfully!");
-          callback();
-        }
-      }, 10000)
-    }).catch((err) => {
-      if (this.attempts > 0) {
-        setTimeout(() => {
-          this.runIdeCmd(ideCommand, projectPath, callback, this.attempts -=1, false)
-        }, 1000);
-      } else {
-        console.log("ERROR: " + err);
-        atom.notifications.addError("ERROR: " + err);
-        return;
       }
     });
+    setTimeout(() => {
+      if (!ideProcess.exitCode) {
+        this.ide = ideProcess;
+        this.starting = false;
+        this.attempts = 0;
+        console.log("IDE process started");
+        if (notification) notification.dismiss();
+        if (allowNotifications) atom.notifications.addSuccess("TrueAutomation Element picker is started successfully!");
+        callback();
+      }
+    }, 10000)
   },
 
   runMacCmd() {
@@ -161,15 +148,13 @@ export default {
   },
 
   deactivate() {
-    kill(this.idePort).then(() => {
-      this.markers = [];
-      this.ide = null;
-      this.starting = null;
-      this.initialized = null;
-      const editors = atom.workspace.getTextEditors();
-      editors.forEach(editor => this.cleanTaSpaces(editor));
-      console.log('TrueAutomation IDE stoped')
-    })
+    this.markers = [];
+    this.ide = null;
+    this.starting = null;
+    this.initialized = null;
+    const editors = atom.workspace.getTextEditors();
+    editors.forEach(editor => this.cleanTaSpaces(editor));
+    console.log('TrueAutomation IDE stoped')
   },
 
   serialize() {
@@ -222,7 +207,13 @@ export default {
         editors.forEach(editor => this.scanForTa(editor));
       };
 
-      this.runClientIde(run);
+      find('port', 9898).then((list) => {
+        if (!list.length) return this.runClientIde(run);
+        const trueautomationProcess = list.find((proc) => proc.name === 'trueautomation')
+        if (!trueautomationProcess) return this.runClientIde(run);
+        return run();
+      });
+
     }
   },
 
