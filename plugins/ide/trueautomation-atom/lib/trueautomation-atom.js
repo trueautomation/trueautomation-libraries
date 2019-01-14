@@ -54,6 +54,15 @@ export default {
   projectNotFound: false,
   attempts: 5,
 
+  findOrStartIDE(cb) {
+    find('port', 9898).then((list) => {
+      if (!list.length) return this.runClientIde(cb);
+      const trueautomationProcess = list.find((proc) => proc.name === 'trueautomation');
+      if (!trueautomationProcess) return this.runClientIde(cb);
+      return cb();
+    });
+  },
+
   runIdeCmd(ideCommand, projectPath, callback, allowNotifications = true) {
     console.log("Kill ide process if exist");
     console.log("Staring ide process...");
@@ -65,7 +74,8 @@ export default {
         if (notification) notification.dismiss();
         if (this.attempts > 0) {
           setTimeout(() => {
-            this.runIdeCmd(ideCommand, projectPath, callback, this.attempts -=1, false);
+            this.attempts -= 1;
+            this.findOrStartIDE(callback);
           }, 1000);
         } else {
           let err = stderr.match(/^.*error.*$/m);
@@ -207,13 +217,7 @@ export default {
         editors.forEach(editor => this.scanForTa(editor));
       };
 
-      find('port', 9898).then((list) => {
-        if (!list.length) return this.runClientIde(run);
-        const trueautomationProcess = list.find((proc) => proc.name === 'trueautomation')
-        if (!trueautomationProcess) return this.runClientIde(run);
-        return run();
-      });
-
+      this.findOrStartIDE(run);
     }
   },
 
