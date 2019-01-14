@@ -55,15 +55,15 @@ export default {
   attempts: 5,
 
   findOrStartIDE(cb) {
-    find('name', 'trueautomation ide').then((list) => {
-      console.log(list);
+    find('port', 9898).then((list) => {
       if (!list.length) return this.runClientIde(cb);
+      const trueautomationProcess = list.find((proc) => proc.name === 'trueautomation' || proc.cmd.includes('trueautomation'));
+      if (!trueautomationProcess) return this.runClientIde(cb);
       return cb();
     });
   },
 
   runIdeCmd(ideCommand, projectPath, callback, allowNotifications = true) {
-    console.log("Kill ide process if exist");
     console.log("Staring ide process...");
     let notification = null;
     if (allowNotifications)
