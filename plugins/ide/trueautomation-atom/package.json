@@ -1,7 +1,7 @@
 {
   "name": "trueautomation-atom",
   "main": "./lib/trueautomation-atom",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "description": "Write your tests faster and make them more reliable with TrueAutomation.IO smart locators.",
   "keywords": [],
   "repository": "https://github.com/educator-io/trueautomation-atom",
@@ -10,7 +10,6 @@
     "atom": ">=1.0.0 <2.0.0"
   },
   "dependencies": {
-    "cross-port-killer": "^1.0.1",
     "find-process": "^1.2.1",
     "isomorphic-fetch": "^2.2.1",
     "socket.io": "^2.1.1"
