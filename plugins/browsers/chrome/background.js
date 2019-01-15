@@ -27,13 +27,13 @@ chrome.browserAction.onClicked.addListener(function(tab) {
   });
 });
 
-chrome.contextMenus.create({
-  title: 'TA Select',
-  contexts: ['all'],
-  onclick(info, tab) {
-    chrome.tabs.sendMessage(tab.id, {});
-  }
-});
+// chrome.contextMenus.create({
+//   title: 'TA Select',
+//   contexts: ['all'],
+//   onclick(info, tab) {
+//     chrome.tabs.sendMessage(tab.id, {});
+//   }
+// });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.msg === "capture") {
