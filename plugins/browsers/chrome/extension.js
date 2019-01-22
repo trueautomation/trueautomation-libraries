@@ -18,12 +18,12 @@ function executeExtension() {
         console.log('Error occurred:', err);
       });
     } else {
-      const taLayovers = document.getElementsByClassName('ta-layover');
+      const taLayovers = document.getElementsByClassName('ta-main');
       if (taLayovers.length === 0) {
         eval(taScript);
       } else {
         window.enableAllUserEvents();
-        taLayovers[0].parentElement.removeChild(taLayovers[0]);
+        window.removeTALayover();
         chrome.storage.local.remove('taScript');
       }
     }
