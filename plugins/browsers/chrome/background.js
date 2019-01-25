@@ -1,17 +1,18 @@
-chrome.webRequest.onHeadersReceived.addListener(
-  function (details) {
-    for (let i = 0; i < details.responseHeaders.length; ++i) {
-      if (['content-security-policy', 'x-frame-options'].includes(details.responseHeaders[i].name.toLowerCase())) {
-        details.responseHeaders.splice(i, 1);
-      }
+chrome.webRequest.onHeadersReceived.addListener((details) => {
+  for (let i = details.responseHeaders.length-1; i >=0 ; --i) {
+    const header = details.responseHeaders[i].name.toLowerCase();
+    if (header == 'x-frame-options' || header == 'frame-options' || header == 'content-security-policy') {
+      details.responseHeaders.splice(i, 1); // Remove header
     }
-
-    return {
-      responseHeaders: details.responseHeaders
-    };
-  }, {
-    urls: ["<all_urls>"]
-  }, ["blocking", "responseHeaders"]);
+  }
+  return {
+    responseHeaders: details.responseHeaders,
+  };
+}, {
+  urls: ["<all_urls>"],
+  types: ["sub_frame"],
+},
+["blocking", "responseHeaders"]);
 
 chrome.webRequest.onCompleted.addListener((details) => {
   chrome.tabs.executeScript({
@@ -26,14 +27,6 @@ chrome.browserAction.onClicked.addListener(function(tab) {
     file: 'extension.js'
   });
 });
-
-// chrome.contextMenus.create({
-//   title: 'TA Select',
-//   contexts: ['all'],
-//   onclick(info, tab) {
-//     chrome.tabs.sendMessage(tab.id, {});
-//   }
-// });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.msg === "capture") {
