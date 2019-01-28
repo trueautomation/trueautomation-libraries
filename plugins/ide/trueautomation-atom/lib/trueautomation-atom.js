@@ -136,6 +136,10 @@ export default {
   },
 
   activate(state) {
+    const paths = atom.project.rootDirectories.map(dir => dir.path);
+
+    const isTaInitialized = paths.find(path => fs.existsSync(`${path}/trueautomation.json`));
+
     // Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     this.subscriptions = new CompositeDisposable();
 
@@ -145,15 +149,19 @@ export default {
     }));
 
     atom.project.onDidChangePaths((path) => {
-      this.initialized = true;
-      this.toggle();
+      if (isTaInitialized) {
+        this.initialized = true;
+        this.toggle();
+      }
     });
 
     atom.project.getPaths().forEach((path) => {
-      this.initialized = true;
-      this.toggle();
+      if (isTaInitialized) {
+        this.initialized = true;
+        this.toggle();
+      }
     });
-    this.toggle();
+    if (isTaInitialized) this.toggle();
   },
 
   deactivate() {
