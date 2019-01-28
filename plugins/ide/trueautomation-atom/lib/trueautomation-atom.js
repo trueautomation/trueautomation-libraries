@@ -149,14 +149,14 @@ export default {
     }));
 
     atom.project.onDidChangePaths((path) => {
-      if (isTaInitialized) {
+      if (fs.existsSync(`${path}/trueautomation.json`)) {
         this.initialized = true;
         this.toggle();
       }
     });
 
     atom.project.getPaths().forEach((path) => {
-      if (isTaInitialized) {
+      if (fs.existsSync(`${path}/trueautomation.json`)) {
         this.initialized = true;
         this.toggle();
       }
