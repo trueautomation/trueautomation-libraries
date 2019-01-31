@@ -16,6 +16,11 @@ function executeExtension() {
         eval(taScript);
       }).catch(function (err) {
         console.log('Error occurred:', err);
+        chrome.storage.local.get('showNotification', function(result) {
+          eval(result['showNotification']);
+          const notificationText = 'TrueAutomation.IO IDE has not been started. You can start it by running `trueautomation ide` in the console of your operating system.';
+          showNotification(notificationText)
+        })
       });
     } else {
       const taLayovers = document.getElementsByClassName('ta-main');

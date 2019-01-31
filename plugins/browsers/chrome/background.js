@@ -15,12 +15,22 @@ chrome.webRequest.onHeadersReceived.addListener((details) => {
 ["blocking", "responseHeaders"]);
 
 chrome.webRequest.onCompleted.addListener((details) => {
-  chrome.tabs.executeScript({
-    file: 'notification.js'
-  });
+  chrome.storage.local.get('showNotification', function(result) {
+    eval(result['showNotification']);
+    const notificationText = 'Element locator has been <span style="color:#ee6c4d;">successfully</span> saved.';
+    showNotification(notificationText)
+  })
 }, {
   urls: ["http://localhost:9898/browser/selectElement"]
 });
+
+chrome.tabs.onUpdated.addListener( function (tabId, changeInfo, tab) {
+  if (changeInfo.status == 'complete') {
+    chrome.tabs.executeScript({
+      file: 'notification.js'
+    })
+  }
+})
 
 chrome.browserAction.onClicked.addListener(function(tab) {
   chrome.tabs.executeScript({

@@ -1,4 +1,4 @@
-function executeExtension() {
+function showNotification(notificationText) {
   const maxZIndex = Array.from(document.querySelectorAll('body *'))
     .map(a => parseFloat(window.getComputedStyle(a).zIndex))
     .filter(a => !isNaN(a))
@@ -12,7 +12,7 @@ function executeExtension() {
 
   let div = document.createElement("div");
   document.body.appendChild(div);
-  div.innerHTML = `Element locator has been <span style="color:#ee6c4d;">successfully</span> saved.`;
+  div.innerHTML = notificationText;
   div.style.position = "fixed";
   div.style.top = "10px";
   div.style.right = "10px";
@@ -29,4 +29,4 @@ function executeExtension() {
   setTimeout(() => { div.remove(); link.remove(); }, 3000);
 }
 
-executeExtension();
+chrome.storage.local.set({ 'tttt': showNotification.toString() });
