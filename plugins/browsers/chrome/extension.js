@@ -13,7 +13,7 @@ function executeExtension() {
       }).then(function(respBody) {
         taScript = respBody;
         chrome.storage.local.set({ 'taScript': taScript });
-        const event = new Event('TAServerNotStarted');
+        const taServerNotStartedEvent = new Event('TAServerNotStarted');
         document.addEventListener('TAServerNotStarted', function (e) {
           chrome.storage.local.get('showNotification', function(result) {
             eval(result['showNotification']);
