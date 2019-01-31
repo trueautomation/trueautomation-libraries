@@ -29,4 +29,4 @@ function showNotification(notificationText) {
   setTimeout(() => { div.remove(); link.remove(); }, 3000);
 }
 
-chrome.storage.local.set({ 'tttt': showNotification.toString() });
+chrome.storage.local.set({ 'showNotification': showNotification.toString() });
