@@ -9,10 +9,10 @@ chrome.webRequest.onBeforeSendHeaders.addListener((details) => {
     currentUserAgent = userAgent.iphonex;
 
   if (currentUserAgent) {
-    for (let t = 0, i = details.requestHeaders.length; t < i; ++t)
-      if (details.requestHeaders[t].name === "User-Agent") {
-        userAgent.default = details.requestHeaders[t].value;
-        details.requestHeaders[t].value = currentUserAgent;
+    for (let i = details.responseHeaders.length; i > 0 ; --i)
+      if (details.requestHeaders[i].name === "User-Agent") {
+        userAgent.default = details.requestHeaders[i].value;
+        details.requestHeaders[i].value = currentUserAgent;
         break
       }
     return {
@@ -24,7 +24,7 @@ chrome.webRequest.onBeforeSendHeaders.addListener((details) => {
 }, ["blocking", "requestHeaders"]);
 
 chrome.webRequest.onHeadersReceived.addListener((details) => {
-  for (let i = details.responseHeaders.length-1; i >=0 ; --i) {
+  for (let i = details.responseHeaders.length; i > 0 ; --i) {
     const header = details.responseHeaders[i].name.toLowerCase();
     if (header == 'x-frame-options' || header == 'frame-options' || header == 'content-security-policy') {
       details.responseHeaders.splice(i, 1); // Remove header
