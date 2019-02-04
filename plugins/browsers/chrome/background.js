@@ -9,7 +9,7 @@ chrome.webRequest.onBeforeSendHeaders.addListener((details) => {
     currentUserAgent = userAgent.iphonex;
 
   if (currentUserAgent) {
-    for (let i = 0; i < details.responseHeaders.length; i++)
+    for (let i = 0; i < details.requestHeaders.length; i++)
       if (details.requestHeaders[i].name === "User-Agent") {
         userAgent.default = details.requestHeaders[i].value;
         details.requestHeaders[i].value = currentUserAgent;
