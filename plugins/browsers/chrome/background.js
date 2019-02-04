@@ -1,3 +1,28 @@
+let userAgent = {
+  default: null,
+  iphonex: "Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1"
+};
+
+chrome.webRequest.onBeforeSendHeaders.addListener((details) => {
+  let currentUserAgent = userAgent.default;
+  if (details.type === 'sub_frame' && details.url.includes('#ta-iphonex'))
+    currentUserAgent = userAgent.iphonex;
+
+  if (currentUserAgent) {
+    for (let t = 0, i = details.requestHeaders.length; t < i; ++t)
+      if (details.requestHeaders[t].name === "User-Agent") {
+        userAgent.default = details.requestHeaders[t].value;
+        details.requestHeaders[t].value = currentUserAgent;
+        break
+      }
+    return {
+      requestHeaders: details.requestHeaders
+    }
+  }
+}, {
+  urls: ["<all_urls>"]
+}, ["blocking", "requestHeaders"]);
+
 chrome.webRequest.onHeadersReceived.addListener((details) => {
   for (let i = details.responseHeaders.length-1; i >=0 ; --i) {
     const header = details.responseHeaders[i].name.toLowerCase();
