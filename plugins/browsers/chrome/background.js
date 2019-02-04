@@ -9,11 +9,11 @@ chrome.webRequest.onBeforeSendHeaders.addListener((details) => {
     currentUserAgent = userAgent.iphonex;
 
   if (currentUserAgent) {
-    for (let i = details.responseHeaders.length; i > 0 ; --i)
+    for (let i = 0; i < details.responseHeaders.length; i++)
       if (details.requestHeaders[i].name === "User-Agent") {
         userAgent.default = details.requestHeaders[i].value;
         details.requestHeaders[i].value = currentUserAgent;
-        break
+        break;
       }
     return {
       requestHeaders: details.requestHeaders
@@ -24,20 +24,22 @@ chrome.webRequest.onBeforeSendHeaders.addListener((details) => {
 }, ["blocking", "requestHeaders"]);
 
 chrome.webRequest.onHeadersReceived.addListener((details) => {
-  for (let i = details.responseHeaders.length; i > 0 ; --i) {
+  for (let i = 0; i < details.responseHeaders.length; i++) {
     const header = details.responseHeaders[i].name.toLowerCase();
-    if (header == 'x-frame-options' || header == 'frame-options' || header == 'content-security-policy') {
-      details.responseHeaders.splice(i, 1); // Remove header
+    console.log(header);
+    console.log(['x-frame-options', 'frame-options','content-security-policy'].includes(header));
+    if (['x-frame-options', 'frame-options','content-security-policy'].includes(header)) {
+      details.responseHeaders[i].value = '';
     }
   }
+  console.log(details.responseHeaders);
   return {
     responseHeaders: details.responseHeaders,
   };
 }, {
   urls: ["<all_urls>"],
-  types: ["sub_frame"],
-},
-["blocking", "responseHeaders"]);
+  types: ["main_frame", "sub_frame"],
+}, ["blocking", "responseHeaders"]);
 
 chrome.webRequest.onCompleted.addListener((details) => {
   chrome.storage.local.get('showNotification', function(result) {
