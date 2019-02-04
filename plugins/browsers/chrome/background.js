@@ -26,13 +26,10 @@ chrome.webRequest.onBeforeSendHeaders.addListener((details) => {
 chrome.webRequest.onHeadersReceived.addListener((details) => {
   for (let i = 0; i < details.responseHeaders.length; i++) {
     const header = details.responseHeaders[i].name.toLowerCase();
-    console.log(header);
-    console.log(['x-frame-options', 'frame-options','content-security-policy'].includes(header));
     if (['x-frame-options', 'frame-options','content-security-policy'].includes(header)) {
       details.responseHeaders[i].value = '';
     }
   }
-  console.log(details.responseHeaders);
   return {
     responseHeaders: details.responseHeaders,
   };
