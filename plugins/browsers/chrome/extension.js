@@ -13,14 +13,6 @@ function executeExtension() {
       }).then(function(respBody) {
         taScript = respBody;
         chrome.storage.local.set({ 'taScript': taScript });
-        const taServerNotStartedEvent = new Event('TAServerNotStarted');
-        document.addEventListener('TAServerNotStarted', function (e) {
-          chrome.storage.local.get('showNotification', function(result) {
-            eval(result['showNotification']);
-            const notificationText = 'TrueAutomation.IO IDE has not been started. You can start it by running `trueautomation ide` in the console of your operating system.';
-            showNotification(notificationText)
-          })
-        }, false);
         eval(taScript);
       }).catch(function (err) {
         console.log('Error occurred:', err);
