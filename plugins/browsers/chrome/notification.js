@@ -1,4 +1,5 @@
-function showNotification(notificationText) {
+function showNotification() {
+  const notificationText = 'Element locator has been <span style="color:#ee6c4d;">successfully</span> saved.';
   const maxZIndex = Array.from(document.querySelectorAll('body *'))
     .map(a => parseFloat(window.getComputedStyle(a).zIndex))
     .filter(a => !isNaN(a))
@@ -29,4 +30,4 @@ function showNotification(notificationText) {
   setTimeout(() => { div.remove(); link.remove(); }, 3000);
 }
 
-chrome.storage.local.set({ 'showNotification': showNotification.toString() });
+showNotification()
