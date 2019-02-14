@@ -39,9 +39,11 @@ chrome.webRequest.onHeadersReceived.addListener((details) => {
 }, ["blocking", "responseHeaders"]);
 
 chrome.webRequest.onCompleted.addListener((details) => {
-  chrome.tabs.executeScript({
-    file: 'notification.js'
-  })
+  if (details.statusCode === 200) {
+    chrome.tabs.executeScript({
+      file: 'notification.js'
+    });
+  }
 }, {
   urls: ["http://localhost:9898/browser/selectElement"]
 });
