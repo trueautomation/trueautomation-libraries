@@ -60,6 +60,30 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       (dataUrl) =>  {
         sendResponse({imgSrc: dataUrl});
       }); //remember that captureVisibleTab() is a statement
+  } else if (request.msg === "url") {
+    console.log(request);
+    fetch(request.url).then((resp) => {
+      resp.json().then((respJSON) => {
+        sendResponse(respJSON);
+      });
+    }).catch((err) => {
+      sendResponse(err);
+    });
+  } else if (request.msg === 'postUrl') {
+    fetch(request.url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: request.body,
+    }).then((resp) => {
+      resp.json().then((respJSON) => {
+        sendResponse(respJSON);
+      });
+    }).catch((err) => {
+      sendResponse(err);
+    });
   }
   return true;
 });
