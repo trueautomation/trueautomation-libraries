@@ -61,7 +61,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({imgSrc: dataUrl});
       }); //remember that captureVisibleTab() is a statement
   } else if (request.msg === "url") {
-    console.log(request);
     fetch(request.url).then((resp) => {
       resp.json().then((respJSON) => {
         sendResponse(respJSON);
