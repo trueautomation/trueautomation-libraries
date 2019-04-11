@@ -38,16 +38,6 @@ chrome.webRequest.onHeadersReceived.addListener((details) => {
   types: ["main_frame", "sub_frame"],
 }, ["blocking", "responseHeaders"]);
 
-chrome.webRequest.onCompleted.addListener((details) => {
-  if (details.statusCode === 200) {
-    chrome.tabs.executeScript({
-      file: 'notification.js'
-    });
-  }
-}, {
-  urls: ["http://localhost:9898/browser/selectElement"]
-});
-
 chrome.browserAction.onClicked.addListener(function(tab) {
   chrome.tabs.executeScript({
     file: 'extension.js'
