@@ -10,7 +10,6 @@ port.onMessage.addListener(function(msg) {
 port.onDisconnect.addListener(function() {
   console.log("Disconnected");
 });
-port.postMessage({ text: "Hello, my_application" });
 
 chrome.webRequest.onBeforeSendHeaders.addListener((details) => {
   let currentUserAgent = userAgent.default;
