@@ -3,6 +3,15 @@ let userAgent = {
   iphonex: "Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1"
 };
 
+const port = chrome.runtime.connectNative('io.trueautomation.recorder');
+port.onMessage.addListener(function(msg) {
+  console.log("Received" + msg);
+});
+port.onDisconnect.addListener(function() {
+  console.log("Disconnected");
+});
+port.postMessage({ text: "Hello, my_application" });
+
 chrome.webRequest.onBeforeSendHeaders.addListener((details) => {
   let currentUserAgent = userAgent.default;
   if (details.type === 'sub_frame' && details.url.includes('#ta-iphonex'))

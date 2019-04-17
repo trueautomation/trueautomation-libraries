@@ -16,6 +16,7 @@
     "contextMenus",
     "webRequest",
     "webRequestBlocking",
+    "nativeMessaging",
     "<all_urls>"
   ],
   "icons": {
