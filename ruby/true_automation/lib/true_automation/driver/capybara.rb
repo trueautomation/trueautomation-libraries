@@ -65,6 +65,11 @@ module TrueAutomation
         end
         @browser
       end
+
+      def quit
+        super
+        @ta_client.stop
+      end
     end
   end
 end
