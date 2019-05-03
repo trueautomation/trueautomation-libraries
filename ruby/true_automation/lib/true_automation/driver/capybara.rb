@@ -71,7 +71,7 @@ module TrueAutomation
         @ta_client.stop
       end
 
-      def specialize_driver
+      def specialize_driver(*args)
         if ::Capybara::Selenium::Driver.respond_to?(:register_specialization)
           browser_type = browser.browser
           # Original method uses self.class, and all classes use Capybara::Selenium::Driver.
