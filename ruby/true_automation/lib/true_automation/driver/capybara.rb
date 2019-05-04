@@ -70,6 +70,19 @@ module TrueAutomation
         super
         @ta_client.stop
       end
+
+      def specialize_driver(*args)
+        if ::Capybara::Selenium::Driver.respond_to?(:register_specialization)
+          browser_type = browser.browser
+          # Original method uses self.class, and all classes use Capybara::Selenium::Driver.
+          # Thereby no specializations in the list for TA driver class and error occured.
+          ::Capybara::Selenium::Driver.specializations.select { |k, _v| k === browser_type }.each_value do |specialization| # rubocop:disable Style/CaseEquality
+            extend specialization
+          end
+        else
+          super
+        end
+      end
     end
   end
 end
