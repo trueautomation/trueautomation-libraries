@@ -9,9 +9,9 @@ module Capybara
         if selector = matched_result && matched_result[1]
           desc = "TrueAutomation element #{selector} on the page"
         end
-        matched_result_ta = desc.match(/.*__ta__(.+)__ta__.*/)
+        matched_result_ta = desc.match(/.*(__ta__.+__ta__).*/)
         if selector = matched_result_ta && matched_result_ta[1]
-          desc = desc.gsub(selector)
+          desc = desc.gsub(selector, '')
         end
         desc
       end
