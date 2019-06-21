@@ -12,7 +12,9 @@ module TrueAutomation
       @port = options[:port] || 9515
       remote = options[:remote]
 
-      if options[:driver]
+      if options[:ta_service]
+        driver_path = " --driver #{options[:ta_service]}"
+      elsif options[:driver]
         driver_path = " --driver #{options[:driver]}"
         driver_path += " --driver-version #{options[:driver_version]}" if options[:driver_version]
       end
