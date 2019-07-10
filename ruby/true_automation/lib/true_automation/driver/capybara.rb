@@ -29,6 +29,10 @@ module TrueAutomation
         @driver = options.delete(:driver)
         @driver_version = options.delete(:driver_version)
 
+        if options[:ta_service]
+          @ta_service = options.delete(:ta_service)
+        end
+
         super(app, options)
 
         @ta_client = TrueAutomation::Client.new
@@ -57,6 +61,7 @@ module TrueAutomation
           @ta_client.start(port: @port,
                            remote: @remote,
                            driver: @driver,
+                           ta_service_path: @ta_service&.executable_path,
                            driver_version: @driver_version)
 
           @ta_client.wait_until_start
@@ -64,7 +69,6 @@ module TrueAutomation
           at_exit do
             @ta_client.stop
           end
-
           super
         end
         @browser
