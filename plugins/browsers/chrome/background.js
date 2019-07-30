@@ -13,7 +13,7 @@ port.onDisconnect.addListener(function() {
 
 chrome.webRequest.onBeforeSendHeaders.addListener((details) => {
   let currentUserAgent = userAgent.default;
-  if (details.type === 'sub_frame' && details.url.includes('#ta-iphonex'))
+  if (details.url.includes('#ta-iphonex'))
     currentUserAgent = userAgent.iphonex;
 
   if (currentUserAgent) {
@@ -35,7 +35,7 @@ chrome.webRequest.onHeadersReceived.addListener((details) => {
   for (let i = 0; i < details.responseHeaders.length; i++) {
     const header = details.responseHeaders[i].name.toLowerCase();
     if (['x-frame-options', 'frame-options','content-security-policy'].includes(header)) {
-      details.responseHeaders[i].value = '';
+      details.responseHeaders.splice(i,1);
     }
   }
   return {
