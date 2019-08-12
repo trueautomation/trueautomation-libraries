@@ -25,6 +25,9 @@ module TrueAutomation
   module Driver
     class Capybara < Capybara::Selenium::Driver
       def initialize(app, **options)
+        options = fetch_options(options)
+        puts options[:desired_capabilities].inspect
+
         @port = options.delete(:port) || 9515
         @driver = options.delete(:driver)
         @driver_version = options.delete(:driver_version)
@@ -90,6 +93,19 @@ module TrueAutomation
         else
           super
         end
+      end
+
+      private
+      def fetch_options(options)
+        if options.key?(:options)
+          browser = options[:options].class.name.split('::')[2]
+          desCaps = Selenium::WebDriver::Remote::Capabilities.send(browser.downcase)
+          opts = options[:options].as_json
+          desCaps[opts.keys.first] = opts[opts.keys.first]
+          options[:desired_capabilities] = desCaps
+          options.delete(:options)
+        end
+        options
       end
     end
   end
