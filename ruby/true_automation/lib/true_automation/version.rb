@@ -1,3 +1,3 @@
 module TrueAutomation
-  VERSION = '0.3.31'
+  VERSION = '0.4.0'
 end

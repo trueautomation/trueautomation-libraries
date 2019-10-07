@@ -8,8 +8,7 @@ module TrueAutomation
     @pid = nil
 
     def start(options)
-
-      @port = options[:port] || 9515
+      @port = options[:port]
       remote = options[:remote]
 
       if options[:ta_service]

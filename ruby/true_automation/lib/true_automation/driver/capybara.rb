@@ -28,7 +28,7 @@ module TrueAutomation
         options = fetch_options(options)
         puts options[:desired_capabilities].inspect
 
-        @port = options.delete(:port) || 9515
+        @port = options.delete(:port) || find_available_port('localhost')
         @driver = options.delete(:driver)
         @driver_version = options.delete(:driver_version)
 
@@ -106,6 +106,13 @@ module TrueAutomation
           options.delete(:options)
         end
         options
+      end
+
+      def find_available_port(host)
+        server = TCPServer.new(host, rand(9515..65515))
+        server.addr[1]
+      ensure
+        server&.close
       end
     end
   end
