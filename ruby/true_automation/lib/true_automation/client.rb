@@ -8,8 +8,7 @@ module TrueAutomation
     @pid = nil
 
     def start(options)
-
-      @port = options[:port] || 9515
+      @port = options[:port]
       remote = options[:remote]
 
       if options[:ta_service]
@@ -38,12 +37,15 @@ module TrueAutomation
     end
 
     def stop
-      if @pid
-        puts "Stopping TrueAutomation.IO Client with pid #{@pid}"
-        uri = URI("http://localhost:#{@port}/shutdown")
-        Net::HTTP.get(uri)
+      begin
+        if @pid
+          puts "Stopping TrueAutomation.IO Client with pid #{@pid}"
+          uri = URI("http://localhost:#{@port}/shutdown")
+          Net::HTTP.get(uri)
 
-        @pid = nil
+          @pid = nil
+        end
+      rescue
       end
     end
 
