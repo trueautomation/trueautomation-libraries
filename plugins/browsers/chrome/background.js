@@ -3,13 +3,41 @@ let userAgent = {
   iphonex: "Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1"
 };
 
-const port = chrome.runtime.connectNative('io.trueautomation.recorder');
-port.onMessage.addListener(function(msg) {
-  console.log("Received" + msg);
-});
-port.onDisconnect.addListener(function() {
-  console.log("Disconnected");
-});
+
+const delay = (millis) => {
+  const date = new Date();
+  let curDate = null;
+  do { curDate = new Date(); }
+  while(curDate-date < millis);
+}
+
+let taIdeStarted = false;
+let retries = 10;
+const connectIde = () => {
+  fetch(`http://localhost:9898/browser/projectsList`).then((resp)=>{
+    chrome.tabs.executeScript({ file: 'extension.js' });
+  }).catch((err)=>{
+    if (!taIdeStarted) {
+      const port = chrome.runtime.connectNative('io.trueautomation.recorder');
+      taIdeStarted = true;
+      port.onMessage.addListener(function(msg) {
+        console.log("Received" + msg);
+      });
+      port.onDisconnect.addListener(function() {
+        console.log("Disconnected");
+        taIdeStarted = false;
+      });
+    };
+
+    if (--retries <= 0) {
+      console.log('No more retries - start script anyway.');
+      chrome.tabs.executeScript({ file: 'extension.js' });
+    } else {
+      delay(200);
+      connectIde();
+    }
+  });
+};
 
 chrome.webRequest.onBeforeSendHeaders.addListener((details) => {
   let currentUserAgent = userAgent.default;
@@ -47,9 +75,7 @@ chrome.webRequest.onHeadersReceived.addListener((details) => {
 }, ["blocking", "responseHeaders"]);
 
 chrome.browserAction.onClicked.addListener(function(tab) {
-  chrome.tabs.executeScript({
-    file: 'extension.js'
-  });
+  connectIde();
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
