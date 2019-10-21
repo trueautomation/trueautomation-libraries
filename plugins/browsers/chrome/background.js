@@ -14,17 +14,10 @@ const delay = (millis) => {
 let taIdeStarted = false;
 let retries = 10;
 const connectIde = () => {
-  console.log('--- fetch ---');
   fetch(`http://localhost:9898/browser/projectsList`).then((resp)=>{
-    console.log('--- connected ---');
-    console.log(resp);
-
     chrome.tabs.executeScript({ file: 'extension.js' });
   }).catch((err)=>{
-    console.log('--- no access ---');
-    console.log(err);
     if (!taIdeStarted) {
-      console.log('--- try to connect ---');
       const port = chrome.runtime.connectNative('io.trueautomation.recorder');
       taIdeStarted = true;
       port.onMessage.addListener(function(msg) {
@@ -36,7 +29,7 @@ const connectIde = () => {
       });
     };
 
-    if (!--retries) {
+    if (--retries <= 0) {
       console.log('No more retries - start script anyway.');
       chrome.tabs.executeScript({ file: 'extension.js' });
     } else {
