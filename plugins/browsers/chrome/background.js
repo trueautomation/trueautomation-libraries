@@ -3,7 +3,6 @@ let userAgent = {
   iphonex: "Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1"
 };
 
-
 const delay = (millis) => {
   const date = new Date();
   let curDate = null;
@@ -12,13 +11,13 @@ const delay = (millis) => {
 }
 
 let taIdeStarted = false;
-let retries = 10;
+let retries = 20;
 const connectIde = () => {
   fetch(`http://localhost:9898/browser/projectsList`).then((resp)=>{
     chrome.tabs.executeScript({ file: 'extension.js' });
   }).catch((err)=>{
     if (!taIdeStarted) {
-      const port = chrome.runtime.connectNative('io.trueautomation.recorder');
+      const port = chrome.runtime.connectNative('io.trueautomation.ide');
       taIdeStarted = true;
       port.onMessage.addListener(function(msg) {
         console.log("Received" + msg);
@@ -33,7 +32,7 @@ const connectIde = () => {
       console.log('No more retries - start script anyway.');
       chrome.tabs.executeScript({ file: 'extension.js' });
     } else {
-      delay(200);
+      delay(300);
       connectIde();
     }
   });
@@ -75,6 +74,7 @@ chrome.webRequest.onHeadersReceived.addListener((details) => {
 }, ["blocking", "responseHeaders"]);
 
 chrome.browserAction.onClicked.addListener(function(tab) {
+  retries = 20;
   connectIde();
 });
 
