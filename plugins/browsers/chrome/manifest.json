@@ -4,7 +4,7 @@
   "name": "TrueAutomation.IO Element Picker",
   "short_name": "TA Element Picker",
   "description": "Write your tests faster and make them more reliable with TrueAutomation.IO smart locators.",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "browser_action": {
     "default_icon": "icon.png"
   },
