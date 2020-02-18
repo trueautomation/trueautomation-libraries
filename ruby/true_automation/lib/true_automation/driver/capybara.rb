@@ -5,9 +5,14 @@ module Capybara
       alias_method :original_description, :description
       def description(only_applied = false)
         desc = original_description
-        matched_result = desc.match(/.*__ta(only)*__(.+)__ta(only)*__.*/)
-        if selector = matched_result && matched_result[2]
+        matched_result = desc.match(/.*__taonly__(.+)__taonly__.*/)
+        if selector = matched_result && matched_result[1]
           desc = "Element was not found on the page. Element '#{selector}' with such locator is not on this page and could not be detected by TrueAutomation."
+        end
+        matched_result_ta = desc.match(/(.*)__ta__(.+)__ta__.*/)
+        if matched_result_ta && matched_result_ta[2]
+          desc = "Unable to locate element { using: 'xpath', selector: '#{matched_result_ta[1]}' }"
+          desc = desc.gsub(selector, '')
         end
         desc
       end
@@ -27,9 +32,10 @@ module Capybara
           else
             result = query.resolve_for(self)
           end
-          
+
           raise Capybara::Ambiguous, "Ambiguous match, found #{result.size} elements matching #{query.applied_description}" if ambiguous?(query, result)
           if result.empty?
+            puts query.locator
             raise Capybara::ElementNotFound, query.applied_description if query.locator.match(/.*__ta(only)*__(.+)__ta(only)*__.*/)
             raise Capybara::ElementNotFound, "Unable to find #{query.applied_description}"
           end
