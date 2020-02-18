@@ -9,10 +9,9 @@ module Capybara
         if selector = matched_result && matched_result[1]
           desc = "Element was not found on the page. Element '#{selector}' with such locator is not on this page and could not be detected by TrueAutomation."
         end
-        matched_result_ta = desc.match(/(.*)__ta__(.+)__ta__.*/)
+        matched_result_ta = desc.match(/visible xpath \"(.*)__ta__(.+)__ta__.*/)
         if matched_result_ta && matched_result_ta[2]
           desc = "Unable to locate element { using: 'xpath', selector: '#{matched_result_ta[1]}' }"
-          desc = desc.gsub(selector, '')
         end
         desc
       end
@@ -35,7 +34,6 @@ module Capybara
 
           raise Capybara::Ambiguous, "Ambiguous match, found #{result.size} elements matching #{query.applied_description}" if ambiguous?(query, result)
           if result.empty?
-            puts query.locator
             raise Capybara::ElementNotFound, query.applied_description if query.locator.match(/.*__ta(only)*__(.+)__ta(only)*__.*/)
             raise Capybara::ElementNotFound, "Unable to find #{query.applied_description}"
           end
