@@ -9,9 +9,9 @@ module Capybara
         if selector = matched_result && matched_result[1]
           desc = "Element was not found on the page. Element '#{selector}' with such locator is not on this page and could not be detected by TrueAutomation."
         end
-        matched_result_ta = desc.match(/visible xpath \"(.*)__ta__(.+)__ta__.*/)
-        if matched_result_ta && matched_result_ta[2]
-          desc = "Unable to locate element { using: 'xpath', selector: '#{matched_result_ta[1]}' }"
+        matched_result_ta = desc.match(/visible\s(.+)\s\"(.*)__ta__(.+)__ta__.*/)
+        if matched_result_ta && matched_result_ta[3]
+          desc = "Unable to locate element { using: '#{matched_result_ta[1]}', selector: '#{matched_result_ta[2]}' }"
         end
         desc
       end
