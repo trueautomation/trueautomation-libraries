@@ -7,13 +7,30 @@ module Capybara
         desc = original_description
         matched_result = desc.match(/.*__taonly__(.+)__taonly__.*/)
         if selector = matched_result && matched_result[1]
-          desc = "TrueAutomation element #{selector} on the page"
+          desc = "Element was not found on the page. Element '#{selector}' with such locator is not on this page and could not be detected by TrueAutomation."
         end
-        matched_result_ta = desc.match(/.*(__ta__.+__ta__).*/)
-        if selector = matched_result_ta && matched_result_ta[1]
-          desc = desc.gsub(selector, '')
+        matched_result_ta = desc.match(/visible\s(.+)\s\"(.*)__ta__(.+)__ta__.*/)
+        if matched_result_ta && matched_result_ta[3]
+          desc = "Unable to locate element { using: '#{matched_result_ta[1]}', selector: '#{matched_result_ta[2]}' }"
         end
         desc
+      end
+    end
+  end
+end
+
+module Capybara
+  module Node
+    module Finders
+      private
+      alias_method :original_synced_resolve, :synced_resolve
+      def synced_resolve(query)
+        begin
+          original_synced_resolve(query)
+        rescue Capybara::ElementNotFound => ex
+          raise Capybara::ElementNotFound, query.applied_description if query.locator.match(/.*__ta(only)*__(.+)__ta(only)*__.*/)
+          raise Capybara::ElementNotFound, ex
+        end
       end
     end
   end
