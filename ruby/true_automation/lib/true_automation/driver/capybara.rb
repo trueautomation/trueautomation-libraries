@@ -23,23 +23,14 @@ module Capybara
   module Node
     module Finders
       private
+      alias_method :original_synced_resolve, :synced_resolve
       def synced_resolve(query)
-        synchronize(query.wait) do
-          if prefer_exact?(query)
-            result = query.resolve_for(self, true)
-            result = query.resolve_for(self, false) if result.empty? && query.supports_exact? && !query.exact?
-          else
-            result = query.resolve_for(self)
-          end
-
-          raise Capybara::Ambiguous, "Ambiguous match, found #{result.size} elements matching #{query.applied_description}" if ambiguous?(query, result)
-          if result.empty?
-            raise Capybara::ElementNotFound, query.applied_description if query.locator.match(/.*__ta(only)*__(.+)__ta(only)*__.*/)
-            raise Capybara::ElementNotFound, "Unable to find #{query.applied_description}"
-          end
-
-          result.first
-        end.tap(&:allow_reload!)
+        begin
+          original_synced_resolve(query)
+        rescue Capybara::ElementNotFound => ex
+          raise Capybara::ElementNotFound, query.applied_description if query.locator.match(/.*__ta(only)*__(.+)__ta(only)*__.*/)
+          raise Capybara::ElementNotFound, ex
+        end
       end
     end
   end
