@@ -47,7 +47,10 @@ module TrueAutomation
         @driver = options.delete(:driver)
         @driver_version = options.delete(:driver_version)
 
-        @ta_debug = ' --ta-debug' if options && options[:ta_debug]
+        if options && options[:ta_debug]
+          @ta_debug = ' --ta-debug'
+          options.delete(:ta_debug)
+        end
 
         if options[:ta_service]
           @ta_service = options.delete(:ta_service)
