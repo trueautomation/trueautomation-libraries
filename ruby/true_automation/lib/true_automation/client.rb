@@ -10,6 +10,7 @@ module TrueAutomation
     def start(options)
       @port = options[:port]
       remote = options[:remote]
+      ta_debug = options[:ta_debug]
 
       if options[:ta_service]
         driver_path = " --driver #{options[:ta_service]}"
@@ -30,7 +31,7 @@ module TrueAutomation
       Dir.mkdir('log') unless File.exist?('log')
       logfile = "log/trueautomation-#{Time.now.strftime('%Y%m%dT%H%M%S')}.log"
 
-      @pid = spawn("#{@executable} --log-file #{logfile} --port #{@port}#{driver_path}#{remote}")
+      @pid = spawn("#{@executable} --log-file #{logfile} --port #{@port}#{driver_path}#{remote}#{ta_debug}")
       puts "Started TrueAutomation.IO client with pid #{@pid} listening to port #{@port}"
 
       @pid

@@ -47,6 +47,8 @@ module TrueAutomation
         @driver = options.delete(:driver)
         @driver_version = options.delete(:driver_version)
 
+        @ta_debug = ' --ta-debug' if options && options[:ta_debug]
+
         if options[:ta_service]
           @ta_service = options.delete(:ta_service)
         end
@@ -78,6 +80,7 @@ module TrueAutomation
         unless @browser
           @ta_client.start(port: @port,
                            remote: @remote,
+                           ta_debug: @ta_debug,
                            driver: @driver,
                            ta_service_path: @ta_service&.executable_path,
                            driver_version: @driver_version)
