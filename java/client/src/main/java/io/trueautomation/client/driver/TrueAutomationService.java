@@ -22,9 +22,9 @@ public class TrueAutomationService extends DriverService {
     public static class Builder extends DriverService.Builder<TrueAutomationService, TrueAutomationService.Builder> {
 
         private String remote = null;
-        private String taDebug = null;
+        private Boolean taDebug = false;
         private String driver = null;
-        private Boolean driverVersion = false;
+        private String driverVersion = null;
         private static final String REMOTE_URL_CAPABILITY = "taRemoteUrl";
         private static final String TA_DEBUG_CAPABILITY = "ta_debug";
         private static final String DRIVER_CAPABILITY = "driver";
