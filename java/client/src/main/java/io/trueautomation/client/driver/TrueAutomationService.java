@@ -24,7 +24,7 @@ public class TrueAutomationService extends DriverService {
         private String remote = null;
         private String taDebug = null;
         private String driver = null;
-        private String driverVersion = null;
+        private Boolean driverVersion = false;
         private static final String REMOTE_URL_CAPABILITY = "taRemoteUrl";
         private static final String TA_DEBUG_CAPABILITY = "ta_debug";
         private static final String DRIVER_CAPABILITY = "driver";
@@ -34,7 +34,7 @@ public class TrueAutomationService extends DriverService {
             super();
             if (capabilities != null) {
                 this.remote = (String) capabilities.getCapability(REMOTE_URL_CAPABILITY);
-                this.taDebug = (String) capabilities.getCapability(TA_DEBUG_CAPABILITY);
+                this.taDebug = (Boolean) capabilities.getCapability(TA_DEBUG_CAPABILITY);
                 this.driver = (String) capabilities.getCapability(DRIVER_CAPABILITY);
                 this.driverVersion = (String) capabilities.getCapability(DRIVER_VERSION_CAPABILITY);
             }
@@ -74,7 +74,7 @@ public class TrueAutomationService extends DriverService {
                 argsBuilder.add("--remote");
             }
 
-            if (this.taDebug != null) {
+            if (this.taDebug) {
                 argsBuilder.add("--ta-debug");
             }
 
