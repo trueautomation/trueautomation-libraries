@@ -1,7 +1,7 @@
 function executeExtension() {
   let taScript;
   const trueautomationLocalIdeServerUrl = 'http://localhost:3000';
-  const trueautomationDevIdeServerUrl = 'http://app-dev.trueautomation.io';
+  const trueautomationDevIdeServerUrl = 'https://app-dev.trueautomation.io';
   const trueautomationProdIdeServerUrl = 'https://app.trueautomation.io';
 
   chrome.storage.local.get('taScript', function(result) {
