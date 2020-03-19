@@ -74,7 +74,7 @@ public class TrueAutomationService extends DriverService {
                 argsBuilder.add("--remote");
             }
 
-            if (this.taDebug) {
+            if (this.taDebug != null && this.taDebug) {
                 argsBuilder.add("--ta-debug");
             }
 
