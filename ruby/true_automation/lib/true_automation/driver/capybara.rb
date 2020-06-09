@@ -36,6 +36,31 @@ module Capybara
   end
 end
 
+module Capybara
+  module Node
+    class Element < Base
+      def innerHTML=(value)
+        synchronize { base.innerHTML=(value) }
+      end
+    end
+  end
+end
+
+class Capybara::Selenium::Node < Capybara::Driver::Node
+  def innerHTML=(value)
+    driver.evaluate_script SET_INNER_HTML_SCRIPT, self, value
+  end
+
+private
+
+  SET_INNER_HTML_SCRIPT = <<~'JS'
+    (function(el, val, xml){
+      el.innerHTML = val;
+      return;
+    })(arguments[0], arguments[1], document)
+  JS
+end
+
 module TrueAutomation
   class RecordNotFound < StandardError; end
 
