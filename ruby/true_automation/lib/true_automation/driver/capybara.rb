@@ -54,10 +54,10 @@ class Capybara::Selenium::Node < Capybara::Driver::Node
 private
 
   SET_INNER_HTML_SCRIPT = <<~'JS'
-    (function(el, val, xml){
+    (function(el, val){
       el.innerHTML = val;
       return;
-    })(arguments[0], arguments[1], document)
+    })(arguments[0], arguments[1])
   JS
 end
 
