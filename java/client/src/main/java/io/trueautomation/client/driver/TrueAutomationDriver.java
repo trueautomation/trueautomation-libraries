@@ -131,8 +131,9 @@ public class TrueAutomationDriver extends RemoteWebDriver
         return el;
     }
 
-    private By selector;
+
     public WebElement setInnerHTML(String using, String locator, String val) throws IOException {
+        By selector = null;
         if (using == "xpath") {
             selector = By.xpath(locator);
         } else if (using == "className") {
