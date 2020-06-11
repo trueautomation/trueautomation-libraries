@@ -1,8 +1,5 @@
 package io.trueautomation.client;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
 
 /**
  * TrueAutomationHelper provides provides helper method to use
@@ -58,22 +55,5 @@ public class TrueAutomationHelper {
      */
     public static String ta(String taName, String locator) {
         return locator + "__ta__" + taName + "__ta__";
-    }
-
-    /**
-     * Use innerHTML to set content inside contenteditable element and return element
-     * @param driver   Selenium WebDriver instance
-     * @param el       Selenium WebElement instance
-     * @param val      Content for WebElement
-     * @return         Selenium WebElement instance
-     */
-    public static WebElement innerHTML(WebDriver driver, WebElement el, String val) {
-      JavascriptExecutor js = (JavascriptExecutor) driver;
-      js.executeScript(
-        "function setInnerHTML(el, val) {" +
-        "  return el.innerHTML = val;" +
-        "}" +
-        "return setInnerHTML(arguments[0], arguments[1]);", el, val);
-      return el;
     }
 }
