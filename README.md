@@ -7,13 +7,13 @@
     
   From branch:
   
-    gem 'true_automation', git: 'https://github.com/educator-io/trueautomation-libraries', branch: '<branch_name>', glob: 'ruby/true_automation/true_automation.gemspec'
+    gem 'true_automation', git: 'https://github.com/trueautomation/trueautomation-libraries', branch: '<branch_name>', glob: 'ruby/true_automation/true_automation.gemspec'
 
 # Java/Maven
 For local test need to do
   1. Clone library from repository:
       ```
-      git@github.com:educator-io/trueautomation-libraries.git 
+      git@github.com:trueautomation/trueautomation-libraries.git 
       ```
   
   2. Change version in **trueautomation-libraries/java/client/pom.xml**
