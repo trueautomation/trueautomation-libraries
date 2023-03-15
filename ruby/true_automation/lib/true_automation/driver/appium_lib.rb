@@ -2,7 +2,7 @@ require_relative '../client'
 
 module TrueAutomation
   module Driver
-    class Appium < Appium::Core::Driver
+    class AppiumLib < Appium::Core::Driver
       def initialize(opts = {})
         @delegate_target = self # for testing purpose
         @automation_name = nil # initialise before 'set_automation_name'
