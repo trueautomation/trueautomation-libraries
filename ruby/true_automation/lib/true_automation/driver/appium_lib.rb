@@ -20,13 +20,26 @@ module TrueAutomation
 
         extend_for(device: @device, automation_name: @automation_name)
 
+        @ta_client = TrueAutomation::Client.new
+        @remote = ''
+
         self # rubocop:disable Lint/Void
       end
 
       def start_driver(server_url: nil,
                        http_client_ops: { http_client: nil, open_timeout: 999_999, read_timeout: 999_999 })
-        @custom_url ||= server_url || "http://127.0.0.1:#{@port}/wd/hub"
+        @ta_client.start(port: @port,
+                         remote: @remote,
+                         ta_debug: @ta_debug,
+                         driver: 'appium')
 
+        @ta_client.wait_until_start
+
+        at_exit do
+          @ta_client.stop
+        end
+        # super
+        @custom_url ||= server_url || "http://127.0.0.1:#{@port}/wd/hub"
         @http_client = get_http_client http_client: http_client_ops.delete(:http_client),
                                        open_timeout: http_client_ops.delete(:open_timeout),
                                        read_timeout: http_client_ops.delete(:read_timeout)
@@ -47,7 +60,7 @@ module TrueAutomation
                                                      listener: @listener)
 
           if @direct_connect
-            d_c = DirectConnections.new(@driver.capabilities)
+            d_c = Appium::Core::DirectConnections.new(@driver.capabilities)
             @driver.update_sending_request_to(protocol: d_c.protocol, host: d_c.host, port: d_c.port, path: d_c.path)
           end
 
