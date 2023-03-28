@@ -4,26 +4,9 @@ module TrueAutomation
   module Driver
     class AppiumLib < Appium::Core::Driver
       def initialize(opts = {})
-        @delegate_target = self # for testing purpose
-        @automation_name = nil # initialise before 'set_automation_name'
-
-        opts = Appium.symbolize_keys opts
-        validate_keys(opts)
-
-        @custom_url = opts.delete :url
-        @caps = get_caps(opts)
-
-        set_appium_lib_specific_values(get_appium_lib_opts(opts))
-        set_app_path
-        set_appium_device
-        set_automation_name
-
-        extend_for(device: @device, automation_name: @automation_name)
-
         @ta_client = TrueAutomation::Client.new
         @remote = ''
-
-        self # rubocop:disable Lint/Void
+        super
       end
 
       def start_driver(server_url: nil,
