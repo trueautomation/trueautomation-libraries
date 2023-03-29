@@ -20,7 +20,7 @@ module TrueAutomation
         at_exit do
           @ta_client.stop
         end
-        super(args)
+        super(*args)
       end
     end
   end
