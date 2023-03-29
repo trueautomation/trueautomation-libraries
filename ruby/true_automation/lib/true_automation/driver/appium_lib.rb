@@ -9,8 +9,7 @@ module TrueAutomation
         super
       end
 
-      def start_driver(server_url: nil,
-                       http_client_ops: { http_client: nil, open_timeout: 999_999, read_timeout: 999_999 })
+      def start_driver(args = {})
         @ta_client.start(port: @port,
                          remote: @remote,
                          ta_debug: @ta_debug,
@@ -21,7 +20,7 @@ module TrueAutomation
         at_exit do
           @ta_client.stop
         end
-        super
+        super(args)
       end
     end
   end
