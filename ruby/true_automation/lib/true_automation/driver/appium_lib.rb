@@ -9,7 +9,7 @@ module TrueAutomation
         super
       end
 
-      def start_driver(args = {})
+      def start_driver(*args)
         @ta_client.start(port: @port,
                          remote: @remote,
                          ta_debug: @ta_debug,
