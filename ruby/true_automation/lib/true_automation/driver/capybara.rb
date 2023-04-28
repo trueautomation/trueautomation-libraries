@@ -81,7 +81,7 @@ module TrueAutomation
           @ta_service = options.delete(:ta_service)
         end
 
-        super(app, options)
+        super(app, **options)
 
         @ta_client = TrueAutomation::Client.new
         @remote = ''
@@ -89,19 +89,17 @@ module TrueAutomation
         options ||= {}
         ta_url = options[:ta_url] || "http://localhost:#{@port}/"
 
-        capabilities = options[:desired_capabilities] || {}
+        capabilities = options[:capabilities] || {}
 
         if options and options[:browser] == :remote
           raise 'Remote driver URL is not specified' unless options[:url]
           capabilities[:taRemoteUrl] = options[:url]
           @remote = ' --remote'
-        else
-          capabilities[:browser] = options[:browser] || :chrome
         end
 
         @options.merge!(browser: :remote,
                         url: ta_url,
-                        desired_capabilities: capabilities)
+                        capabilities: capabilities)
       end
 
       def browser
@@ -148,7 +146,7 @@ module TrueAutomation
           desCaps = Selenium::WebDriver::Remote::Capabilities.send(browser.downcase)
           opts = options[:options].as_json
           desCaps[opts.keys.first] = opts[opts.keys.first]
-          options[:desired_capabilities] = desCaps
+          options[:capabilities] = desCaps
           options.delete(:options)
         end
         options
