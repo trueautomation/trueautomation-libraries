@@ -93,6 +93,13 @@ module TrueAutomation
 
         if options and options[:browser] == :remote
           raise 'Remote driver URL is not specified' unless options[:url]
+          input_caps = options[:capabilities]&.as_json || {}
+          browser = options[:capabilities] ? opts_browser(options[:capabilities]) : :chrome
+          capabilities = browser.to_s == 'remote' ?
+            Selenium::WebDriver::Remote::Capabilities.chrome :
+            Selenium::WebDriver::Remote::Capabilities.send(browser)
+          copy_options(capabilities, input_caps)
+
           capabilities[:taRemoteUrl] = options[:url]
           @remote = ' --remote'
         end
@@ -140,16 +147,28 @@ module TrueAutomation
       end
 
       private
+
+      def opts_browser(opts)
+        opts.class.name.split('::')[2].downcase.to_sym
+      end
+
       def fetch_options(options)
         if options.key?(:options)
-          browser = options[:options].class.name.split('::')[2]
+          browser = opts_browser(options[:options])
           desCaps = Selenium::WebDriver::Remote::Capabilities.send(browser.downcase)
           opts = options[:options].as_json
-          desCaps[opts.keys.first] = opts[opts.keys.first]
+          copy_options(desCaps, opts)
           options[:capabilities] = desCaps
           options.delete(:options)
         end
         options
+      end
+
+      def copy_options(caps, opts)
+        # Add options to capabilities mapping if required
+        opts.keys.each do |key|
+          caps[key] = opts[key]
+        end
       end
 
       def find_available_port(host)
