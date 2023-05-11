@@ -140,16 +140,26 @@ module TrueAutomation
       end
 
       private
+
       def fetch_options(options)
         if options.key?(:options)
           browser = options[:options].class.name.split('::')[2]
           desCaps = Selenium::WebDriver::Remote::Capabilities.send(browser.downcase)
           opts = options[:options].as_json
-          desCaps[opts.keys.first] = opts[opts.keys.first]
+
+          copy_options(desCaps, opts)
+
           options[:capabilities] = desCaps
           options.delete(:options)
         end
         options
+      end
+
+      def copy_options(caps, opts)
+        # Add options to capabilities mapping if required
+        opts.keys.each do |key|
+          caps[key] = opts[key]
+        end
       end
 
       def find_available_port(host)
