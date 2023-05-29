@@ -68,6 +68,8 @@ module TrueAutomation
     class Capybara < Capybara::Selenium::Driver
       def initialize(app, **options)
         options = fetch_options(options)
+        default_options = Selenium::WebDriver::Options.send(options[:browser] || :chrome)
+        options[:capabilities] ||= default_options
         @port = options.delete(:port) || find_available_port('localhost')
         @driver = options.delete(:driver)
         @driver_version = options.delete(:driver_version)
