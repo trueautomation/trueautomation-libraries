@@ -3,13 +3,13 @@ require_relative '../client'
 module TrueAutomation
   module Driver
     class AppiumLib < Appium::Core::Driver
-      def initialize(*args)
+      def initialize(**opts)
         @ta_client = TrueAutomation::Client.new
         @remote = ''
-        super
+        super(**opts)
       end
 
-      def start_driver(*args)
+      def start_driver(**opts)
         @ta_client.start(port: @port,
                          remote: @remote,
                          ta_debug: @ta_debug,
@@ -20,7 +20,7 @@ module TrueAutomation
         at_exit do
           @ta_client.stop
         end
-        super
+        super(**opts)
       end
     end
   end
