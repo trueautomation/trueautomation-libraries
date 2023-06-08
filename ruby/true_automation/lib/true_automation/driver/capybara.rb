@@ -99,12 +99,7 @@ module TrueAutomation
           raise 'Remote driver URL is not specified' unless options[:url]
           input_caps = opts_to_json(options[:capabilities]) || {}
           browser = opts_browser(options[:capabilities] || Selenium::WebDriver::Options.chrome)
-          browser_class_name = browser.to_s.slice(0,1).capitalize + browser.to_s.slice(1..-1)
-          capabilities = browser.to_s == 'remote' ?
-            Selenium::WebDriver::Remote::Options.new :
-            Selenium::WebDriver::Options.send(browser.downcase)
-          copy_options(capabilities, input_caps)
-
+          capabilities = options_class(browser).new(**input_caps)
           capabilities.add_preference(:taRemoteUrl, options[:url])
           @remote = ' --remote'
         end
@@ -153,6 +148,16 @@ module TrueAutomation
 
       private
 
+      def options_class(browser)
+        browser.to_s == 'remote' ?
+          Selenium::WebDriver::Remote::Options :
+          eval("Selenium::WebDriver::#{browser_class_name(browser)}::Options")
+      end
+
+      def browser_class_name(browser)
+        browser.to_s.slice(0,1).capitalize + browser.to_s.slice(1..-1)
+      end
+
       def opts_browser(opts)
         opts.class.name.split('::')[2].downcase.to_sym
       end
@@ -166,9 +171,8 @@ module TrueAutomation
       def fetch_options(options)
         if options.key?(:options)
           browser = opts_browser(options[:options])
-          desCaps = Selenium::WebDriver::Options.send(browser.downcase)
           opts = opts_to_json(options[:options])
-          copy_options(desCaps, opts)
+          desCaps = options_class(browser).new(**opts)
           options[:capabilities] = desCaps
           options.delete(:options)
         end
