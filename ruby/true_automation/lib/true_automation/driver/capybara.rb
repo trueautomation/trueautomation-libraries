@@ -116,7 +116,8 @@ module TrueAutomation
                            ta_debug: @ta_debug,
                            driver: @driver,
                            ta_service_path: @ta_service&.executable_path,
-                           driver_version: @driver_version)
+                           driver_version: @driver_version,
+                           ta_recorder: @ta_recorder)
 
           @ta_client.wait_until_start
 
@@ -169,6 +170,9 @@ module TrueAutomation
       end
 
       def fetch_options(options)
+        if options.delete(:ta_recorder)
+          @ta_recorder = ' --ta-recorder'
+        end
         if options.key?(:options)
           browser = opts_browser(options[:options])
           opts = opts_to_json(options[:options])
