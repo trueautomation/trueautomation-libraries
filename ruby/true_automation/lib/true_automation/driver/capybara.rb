@@ -170,15 +170,15 @@ module TrueAutomation
       end
 
       def fetch_options(options)
+        if options.delete(:ta_recorder)
+          @ta_recorder = ' --ta-recorder'
+        end
         if options.key?(:options)
           browser = opts_browser(options[:options])
           opts = opts_to_json(options[:options])
           desCaps = options_class(browser).new(**opts)
           options[:capabilities] = desCaps
           options.delete(:options)
-        end
-        if options.delete(:ta_recorder)
-          @ta_recorder = ' --ta-recorder'
         end
         options
       end
