@@ -116,7 +116,8 @@ module TrueAutomation
                            ta_debug: @ta_debug,
                            driver: @driver,
                            ta_service_path: @ta_service&.executable_path,
-                           driver_version: @driver_version)
+                           driver_version: @driver_version,
+                           ta_recorder: @ta_recorder)
 
           @ta_client.wait_until_start
 
@@ -175,6 +176,9 @@ module TrueAutomation
           desCaps = options_class(browser).new(**opts)
           options[:capabilities] = desCaps
           options.delete(:options)
+        end
+        if options.delete(:ta_recorder)
+          @ta_recorder = ' --ta-recorder'
         end
         options
       end
