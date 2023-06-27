@@ -97,9 +97,7 @@ module TrueAutomation
 
         if options && options[:browser] == :remote
           raise 'Remote driver URL is not specified' unless options[:url]
-          input_caps = opts_to_json(options[:capabilities]) || {}
-          browser = opts_browser(options[:capabilities] || Selenium::WebDriver::Options.chrome)
-          capabilities = options_class(browser).new(**input_caps)
+          capabilities = duplicate_options(options[:capabilities])
           capabilities.add_preference(:taRemoteUrl, options[:url])
           @remote = ' --remote'
         end
@@ -169,16 +167,23 @@ module TrueAutomation
           opts&.as_json
       end
 
+      def duplicate_options(original_options)
+        browser = opts_browser(original_options || Selenium::WebDriver::Options.chrome)
+        opts = opts_to_json(original_options) || {}
+        capabilities = options_class(browser).new(**opts)
+        original_options.extensions.each do |ext|
+          capabilities.add_extension(ext)
+        end
+        capabilities
+      end
+
       def fetch_options(options)
+        if options.key?(:options)
+          options[:capabilities] = duplicate_options(options[:options])
+          options.delete(:options)
+        end
         if options.delete(:ta_recorder)
           @ta_recorder = ' --ta-recorder'
-        end
-        if options.key?(:options)
-          browser = opts_browser(options[:options])
-          opts = opts_to_json(options[:options])
-          desCaps = options_class(browser).new(**opts)
-          options[:capabilities] = desCaps
-          options.delete(:options)
         end
         options
       end
