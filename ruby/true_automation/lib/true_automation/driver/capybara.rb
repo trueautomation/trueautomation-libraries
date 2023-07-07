@@ -93,11 +93,11 @@ module TrueAutomation
         options ||= {}
         ta_url = options[:ta_url] || "http://localhost:#{@port}/"
 
-        capabilities = options[:capabilities] || {}
+        capabilities = options[:capabilities] || Selenium::WebDriver::Options.chrome
 
         if options && options[:browser] == :remote
           raise 'Remote driver URL is not specified' unless options[:url]
-          capabilities = duplicate_options(options[:capabilities])
+          capabilities = duplicate_options(capabilities)
           capabilities.add_preference(:taRemoteUrl, options[:url])
           @remote = ' --remote'
         end
